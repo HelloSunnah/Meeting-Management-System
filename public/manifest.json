@@ -1,0 +1,23 @@
+{
+    "name": "Meeting App",
+    "short_name": "VuePWA",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4DBA87",
+    "orientation": "portrait",
+    "scope": ".",
+    "icons": [
+      {
+        "src": "/img/icons/ati-small-logo-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/img/icons/ati-logo-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  
