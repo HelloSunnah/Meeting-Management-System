@@ -196,5 +196,28 @@
 
 "meeting_schedule": "ตารางการประชุม",
 
-"Schedule": "ตารางเวลา"
+
+  "meeting_schedule": "ตารางการประชุม",
+  "Schedule": "ตารางเวลา",
+  "Live Chat": "แชทสด",
+  "Report": "รายงาน",
+  "Meeting Report": "รายงานการประชุม",
+    "Live Chat": "แชทสด",
+  "Report": "รายงาน",
+  "Meeting Report": "รายงานการประชุม",
+  "Setup": "การตั้งค่า",
+  "Meeting Room": "ห้องประชุม",
+  "Project": "โครงการ",
+  "Poll Option": "ตัวเลือกโหวต",
+  "Meeting Schedule": "ตารางการประชุม",
+  "Polling": "การลงคะแนน",
+  "Vote": "โหวต",
+  "Home": "หน้าหลัก",
+  "Register": "ลงทะเบียน",
+  "Vote Result": "ผลโหวต",
+  "Client": "ลูกค้า",
+  "User": "ผู้ใช้",
+  "Poll Options": "ตัวเลือกโหวต",
+  "List": "รายการ"
+
 }

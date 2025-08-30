@@ -1,29 +1,47 @@
-# vue-project
+# 📅 Meeting Management System
 
-This template should help get you started developing with Vue 3 in Vite.
+This is the **frontend application** of the **Meeting Management System**, built with **Vue.js 3**.  
+It provides a responsive and modern user interface for managing meetings, live chat, polling, voting, and reporting.  
+The app integrates with a **Laravel + PostgreSQL backend** (via REST API) secured with **Laravel Passport authentication**.
 
-## Recommended IDE Setup
+---
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## ✨ Features
 
-## Customize configuration
+### 👤 User Features
+- 💬 **Live Chat** – Real-time team communication.
+- 📊 **Dashboard** – Centralized overview of activities.
+- 📅 **Meeting Schedule** – Create, view, and manage meetings.
+- 🗳️ **Polling**
+  - Create and view polls
+  - Vote securely
+  - See live results
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+### 👨‍💼 Admin Features
+- ⚙️ **Setup Module**
+  - Manage users, clients, projects, meeting rooms, and poll options
+- 📑 **Reports**
+  - Generate meeting reports with details
 
-## Project Setup
+---
 
-```sh
-npm install
-```
+## 🛠️ Tech Stack (Frontend)
 
-### Compile and Hot-Reload for Development
+| Category        | Technology |
+|-----------------|------------|
+| **Framework**   | [Vue.js 3](https://vuejs.org/) (options API) |
+| **Build Tool**  | [Vite](https://vitejs.dev/) |
+| **UI Libraries**| Tailwind CSS / Bootstrap, [Font Awesome](https://fontawesome.com/) (animated icons) |
+| **State Mgmt.** | Pinia / Vuex *(if configured)* |
+| **Routing**     | Vue Router 4 |
+| **Auth**        | Token-based (via Laravel Passport API) |
+| **Backend API** | Laravel REST API with PostgreSQL (separate repo) |
 
-```sh
-npm run dev
-```
+---
 
-### Compile and Minify for Production
+## ⚡ Installation & Setup
 
-```sh
-npm run build
-```
+1. **Clone repository**
+   ```bash
+   git clone http://192.168.0.13/php/meeting-management-system.git
+   cd meeting-management-system-frontend

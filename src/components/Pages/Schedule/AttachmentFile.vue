@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full bg-gray-50 shadow-md rounded-xl border border-gray-200 p-6 space-y-6">
+  <div class="w-full shadow-md rounded-xl bg-white border border-gray-200 p-6 space-y-6">
     <div class="flex justify-between items-center">
       <h2 class="text-xl font-semibold text-gray-800">Attachments</h2>
       <button type="button" @click="addAttachmentField"
@@ -7,21 +7,21 @@
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
-
     <div v-for="(attachment, index) in newAttachments" :key="'new-' + index" class="flex gap-4 items-end">
       <div class="flex-1">
-        <input type="text" v-model="attachment.title" class="w-full border rounded-md px-2 py-1"
+        <input type="text" v-model="attachment.title"
+          class="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           placeholder="Attachment Title" />
       </div>
       <div class="flex-1">
-        <input type="file" @change="handleNewFileUpload($event, index)" class="w-full" />
+        <input type="file" @change="handleNewFileUpload($event, index)"
+          class="w-full px-4 py-3 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
       </div>
       <button v-if="newAttachments.length > 1" @click="removeNewAttachment(index)"
         class="text-red-500 hover:text-red-700 text-xl">
         <i class="fa-solid fa-minus-circle"></i>
       </button>
     </div>
-
     <hr class="my-6" />
     <h2 class="text-xl font-bold text-gray-800 mb-4">Existing Attachments</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -30,8 +30,7 @@
         <div class="h-32 flex items-center justify-center bg-gray-100 rounded">
           <template v-if="isImage(attachment.attachment_path)">
             <a :href="generateApiUrl(attachment.attachment_path)" target="_blank">
-              <img :src="generateApiUrl(attachment.attachment_path)" alt="Attachment"
-                class="object-contain max-h-32" />
+              <img :src="generateApiUrl(attachment.attachment_path)" alt="Attachment" class="object-contain max-h-32" />
             </a>
           </template>
           <template v-else-if="isPDF(attachment.attachment_path)">
@@ -106,7 +105,7 @@ export default {
       return /\.pdf$/i.test(path);
     },
     generateApiUrl(path) {
-      return `${apiEndpoints.storageUrl}${path}`;
+      return `${apiEndpoints.storageUrl2}${path}`;
     },
   },
 };

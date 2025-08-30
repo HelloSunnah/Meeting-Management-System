@@ -3,55 +3,69 @@
     <div :class="theme9" class="w-full rounded-lg shadow-xl p-3 sm:p-4">
       <Breadcrumb :items="breadcrumbs" :align="buttonPositionClass" :themeText="themeText" />
       <Loader v-if="loading" />
+
       <div class="w-full overflow-x-auto">
         <table :class="theme6" class="min-w-full table-auto rounded-lg shadow text-sm">
           <thead :class="theme5" class="text-gray-700 bg-gray-100">
+            
             <tr class="text-left text-xs sm:text-sm font-semibold uppercase">
-              <th class="p-2 text-start w-10"></th>
-              <th class="p-2 text-start w-10"></th>
+              <th class="p-2 w-10"></th>
               <th v-for="(placeholder, key) in searchFields" :key="key" class="p-2 text-start">
-                <input v-model="searchQueries[key]" :placeholder="placeholder" class="input-field w-full sm:w-auto" />
+                <input v-model="searchQueries[key]" :placeholder="placeholder" class="input-field w-full sm:w-auto"
+                  type="search" />
               </th>
-              <th></th>
             </tr>
           </thead>
+
           <tbody :class="theme7">
-            <template v-for="(register, index) in paginatedRegisters" :key="register.id">
-              <tr :class="getRowClass(index)">
-                <td class="p-2 text-start">
-                  <span @click="toggleDetails(index)"
-                    class="cursor-pointer w-6 h-6 flex items-center justify-center text-white bg-blue-500 hover:bg-blue-600 rounded-full shadow">
-                    <span class="text-base font-bold">{{ expandedIndex === index ? "×" : "+" }}</span>
-                  </span>
-                </td>
-                <td class="p-2">
-                  <div class="flex items-start gap-2">
-                    <span>{{ register.title }}</span>
-                    <span v-if="isregisterOngoing(register)" class="w-6 h-6">
-                      <img src="@/assets/img/workflow.gif" alt="Ongoing"
-                        class="w-full h-full object-cover rounded-full" />
-                    </span>
-                  </div>
-                </td>
-                <td class="p-2">{{ register.name }}</td>
-                <td class="p-2">{{ register.email }}</td>
-                <td class="p-2">{{ register.department_name }}</td>
-              </tr>
-              <tr v-show="expandedIndex === index" :class="theme9">
-                <td colspan="6" class="p-8 bg-gray-50 rounded-b-lg">
-                  <RegistrationEdit v-if="expandedIndex === index && register.id" :userId="register.id"
-                    @updated="fetchRegisters" />
-                </td>
-              </tr>
+            <template v-if="registers.length > 0">
+              <template v-for="(register, index) in registers" :key="register.id">
+                <tr :class="getRowClass(index)">
+               
+                  <td class="p-2">
+                    <button @click="toggleDetails(index)"
+                      class="w-6 h-6 flex items-center justify-center text-white bg-blue-500 hover:bg-blue-600 rounded-full shadow">
+                      <span class="text-base font-bold">
+                        {{ expandedIndex === index ? "×" : "+" }}
+                      </span>
+                    </button>
+                  </td>
+
+                  <td class="p-2">{{ register.name }}</td>
+                  <td class="p-2">{{ register.email }}</td>
+                  <td class="p-2">
+                    {{ register.department ? register.department.name : "-" }}
+                  </td>
+
+               
+                </tr>
+
+                <!-- Expandable Edit Form -->
+                <tr v-show="expandedIndex === index" :class="theme9">
+                  <td colspan="6" class="p-8 rounded-b-lg">
+                    <RegistrationEdit v-if="expandedIndex === index" :userId="register.id" :user="register"
+                      @updated="fetchRegisters" />
+                  </td>
+                </tr>
+              </template>
             </template>
+
+            <tr v-else>
+              <td colspan="6" class="p-6 text-center text-gray-500 italic">
+                No users found 
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <FloatingAddButton :route="'/register/form'" />
+
       <Pagination :currentPage="currentPage" :totalPages="totalPages" @page-change="changePage" />
     </div>
+
+    <FloatingAddButton :route="'/register/form'" />
   </div>
 </template>
+
 
 <script>
 import Breadcrumb from "@/components/Main/Breadcrumbs.vue";
@@ -61,8 +75,40 @@ import Pagination from "@/components/Pages/Schedule/Pagination.vue";
 import FloatingAddButton from "@/components/Main/Floating/FloatingAddButton.vue";
 import axios from "axios";
 import apiEndpoints from "@/config/apiConfig";
+import useTheme from "@/components/js/ThemeSetting";
+import { useToast } from "vue-toastification";
 
 export default {
+  setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
+    const toast = useToast();
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
+  },
   components: {
     RegistrationEdit,
     Pagination,
@@ -75,30 +121,26 @@ export default {
       themeText: "",
       breadcrumbs: [
         { label: "Home", clickable: true, onClick: () => this.$router.push("/dashboard") },
-        { label: "User", clickable: false },
         { label: "Register", clickable: false },
       ],
       searchQueries: {
         name: "",
         email: "",
-        department_name: ""
+        department_name: "",
       },
       registers: [],
       loading: false,
       expandedIndex: null,
       currentPage: 1,
       itemsPerPage: 10,
+      totalPages: 0,
     };
   },
   computed: {
     buttonPositionClass() {
       return this.$store.state.sidebarPosition;
     },
-    theme5() { return "bg-gray-500 text-gray-100"; },
-    theme6() { return this.$store.state.theme === "dark" ? "bg-gray-600 text-gray-50" : "bg-gray-400 text-gray-900"; },
-    theme7() { return this.$store.state.theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-300 text-gray-700"; },
-    theme8() { return this.$store.state.theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-gray-200 text-gray-700"; },
-    theme9() { return this.$store.state.theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"; },
+
     searchFields() {
       return {
         name: "Search Name",
@@ -106,21 +148,14 @@ export default {
         department_name: "Search Department",
       };
     },
-    filteredRegisters() {
-      return this.registers.filter(register => {
-        return (
-          (!this.searchQueries.name || (register.name && register.name.toLowerCase().includes(this.searchQueries.name.toLowerCase()))) &&
-          (!this.searchQueries.email || (register.email && register.email.toLowerCase().includes(this.searchQueries.email.toLowerCase()))) &&
-          (!this.searchQueries.department_name || (register.department_name && register.department_name.toLowerCase().includes(this.searchQueries.department_name.toLowerCase())))
-        );
-      });
-    },
-    paginatedRegisters() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      return this.filteredRegisters.slice(start, start + this.itemsPerPage);
-    },
-    totalPages() {
-      return Math.ceil(this.filteredRegisters.length / this.itemsPerPage);
+  },
+  watch: {
+    searchQueries: {
+      handler() {
+        this.currentPage = 1;
+        this.fetchRegisters();
+      },
+      deep: true,
     },
   },
   mounted() {
@@ -132,28 +167,45 @@ export default {
     },
     fetchRegisters() {
       this.loading = true;
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
-      axios.get(`${apiEndpoints.allUsers}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          this.registers = res.data.users;
-          console.log("Fetched users:", this.registers); 
+      axios
+        .get(apiEndpoints.allUsers, {
+          params: {
+            page: this.currentPage,
+            limit: this.itemsPerPage,
+            name: this.searchQueries.name || undefined,
+            email: this.searchQueries.email || undefined,
+            dep: this.searchQueries.department_name || undefined,
+          },
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(err => console.error("Fetch registers error:", err))
+        .then((res) => {
+          const data = res.data.users;
+          this.registers = data.data;
+          this.totalPages = data.last_page;
+          this.currentPage = data.current_page;
+        })
+        .catch((err) => {
+          console.error("Fetch registers error:", err);
+          this.registers = [];
+          this.totalPages = 0;
+        })
         .finally(() => {
           this.loading = false;
         });
-    }
-    ,
+    },
     changePage(page) {
-      if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+        this.fetchRegisters();
+      }
     },
     getRowClass(index) {
-      return index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-100';
+      return index % 2 === 0 ? this.theme9 : this.theme8;
     },
     isregisterOngoing(register) {
+      // Adjust based on your actual status field or logic
       return register.status === "ongoing";
     },
   },

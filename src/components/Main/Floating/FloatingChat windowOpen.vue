@@ -288,7 +288,7 @@ window.Echo = new Echo({
   authEndpoint: apiEndpoints.broadcasting,
   auth: {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       Accept: 'application/json',
     },
   },
@@ -351,9 +351,9 @@ export default {
     document.removeEventListener("click", this.handleClickOutside);
   },
   methods: {
-    // Fetch authentication token from localStorage
+    // Fetch authentication token from sessionStorage
     getToken() {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         throw new Error("No authentication token found!");
       }

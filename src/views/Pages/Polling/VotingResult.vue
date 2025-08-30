@@ -1,68 +1,55 @@
 <template>
-  <div class="min-h-screen p-6 sm:p-10 bg-gradient-to-br from-white to-gray-100">
-    <Breadcrumb :items="breadcrumbs" />
+  <div :class="theme8" class="min-h-screen p-6 sm:p-10">
+    <Breadcrumb :class="themeText" :items="breadcrumbs" />
 
     <!-- Filters -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+    <div :class="theme8" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
       <h2 class="text-2xl font-semibold text-gray-800">Polls</h2>
 
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
-        <input
-          type="month"
-          v-model="selectedMonth"
-          class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-        />
+        <input :class="themeInputText" type="month" v-model="selectedMonth"
+          class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300" />
 
-        <select
-          v-model="pollVisibility"
-          class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-        >
-          <option value="all">All</option> <!-- Added 'All' option -->
+        <select v-model="pollVisibility" :class="theme6"
+          class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300">
+          <option value="all">All</option>
           <option value="published">Published</option>
           <option value="unpublished">Unpublished</option>
         </select>
       </div>
     </div>
+    <!-- <Loader v-if="loading" />  -->
 
-    <Loader v-if="loading" />
 
-    <div v-else-if="!filteredPolls.length" class="text-center mt-16">
-      <img src="@/assets/img/avai98.gif" alt="No polls" class="mx-auto w-60 h-60 object-contain mb-4 opacity-80" />
+   <div v-if="!filteredPolls.length>0" class="text-center mt-16">
+      <img src="@/assets/img/nodata.png" alt="No polls" class="mx-auto w-60 h-60 object-contain mb-4 opacity-80" />
       <p class="text-xl text-gray-700">
-        {{ fetchError ? "⚠️ Failed to load polls. Please try again later." : "No polls available." }}
+        {{ fetchError ? "⚠️ Failed to load polls. Please try again later." : "No Result available." }}
       </p>
-    </div>
+    </div> 
 
-    <div v-else class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <PollCard
-        v-for="poll in filteredPolls"
-        :key="poll.polling_id"
-        :poll="poll"
-        :user-id="userId"
-        :admin-id="adminId"
-        @open-modal="handleModal"
-        @toggle-publish="handleTogglePublish"
-      />
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <PollCard v-for="poll in filteredPolls" :key="poll.polling_id" :poll="poll" :user-id="userId" :admin-id="adminId"
+        @open-modal="handleModal" @toggle-publish="handleTogglePublish" />
     </div>
-
     <ConfirmModal ref="confirmModal" />
-    <Modal
-      :show="isModalVisible"
-      :title="modalTitle"
-      :voters="modalVoters"
-      @update:show="isModalVisible = $event"
-    />
+    <Modal :show="isModalVisible" :title="modalTitle" :voters="modalVoters" @update:show="isModalVisible = $event" />
   </div>
-</template><script>
+</template>
+
+<script>
 import Breadcrumb from "@/components/Main/Breadcrumbs.vue";
 import Loader from "@/components/Main/Loader.vue";
 import Modal from "@/components/Pages/Polling/VotingParticipantsModal.vue";
 import PollCard from "@/components/Pages/Polling/PollCard.vue";
 import ConfirmModal from "@/components/Modals/ConfirmationModal.vue";
 import apiEndpoints from "@/config/apiConfig";
+import useTheme from '@/components/js/ThemeSetting';
+import { useToast } from "vue-toastification";
 
 export default {
   components: { Breadcrumb, Loader, Modal, PollCard, ConfirmModal },
+
   data() {
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -70,7 +57,9 @@ export default {
     return {
       breadcrumbs: [
         { label: "Home", clickable: true, onClick: () => this.$router.push("/dashboard") },
-        { label: "Polling", clickable: false }
+        { label: "Polling", clickable: false },
+        { label: "Voting", clickable: false },
+        { label: "Result", clickable: false }
       ],
       polls: [],
       loading: false,
@@ -81,11 +70,13 @@ export default {
       modalVoters: [],
       modalAction: null,
       selectedMonth: currentMonth,
-      pollVisibility: "all", // <-- Default to "All"
-      userId: localStorage.getItem("user_id"),
-      adminId: null
+      pollVisibility: "all",
+      userId: sessionStorage.getItem("user_id"),
+      adminId: null,
+      pollInterval: null
     };
   },
+
   computed: {
     filteredPolls() {
       if (!this.selectedMonth) return [];
@@ -108,10 +99,26 @@ export default {
       });
     }
   },
+
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   mounted() {
     this.fetchPolls();
+    this.pollInterval = setInterval(this.fetchPolls, 5000); // Refresh every 5 seconds
   },
+
+  beforeUnmount() {
+    clearInterval(this.pollInterval);
+  },
+
   methods: {
+    isAdmin() {
+      return this.userId === this.adminId;
+    },
+
     async fetchPolls() {
       this.loading = true;
       this.fetchError = false;
@@ -119,7 +126,7 @@ export default {
       try {
         const res = await fetch(apiEndpoints.voting_result, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`
           }
         });
 
@@ -136,7 +143,7 @@ export default {
         });
 
         this.polls = allPolls;
-        localStorage.setItem("poll_cache", JSON.stringify(data));
+        sessionStorage.setItem("poll_cache", JSON.stringify(data));
       } catch (err) {
         console.error("Poll fetch error:", err);
         this.fetchError = true;
@@ -158,19 +165,26 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`
           },
-          body: JSON.stringify({ publish_status: poll.publish_status === 1 ? 0 : 1 })
+          body: JSON.stringify({
+            publish_status: poll.publish_status === 1 ? 0 : 1
+          })
         });
 
-        if (!res.ok) throw new Error("Failed to toggle publish status");
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Error ${res.status}: ${errText}`);
+        }
 
         const updated = await res.json();
 
-        this.polls = this.polls.map(p =>
-          p.polling_id === poll.polling_id
-            ? { ...p, publish_status: updated.publish_status }
-            : p
+        await this.fetchPolls();
+
+        this.toast.success(
+          updated.publish_status === 1
+            ? "Poll published successfully."
+            : "Poll unpublished successfully."
         );
       } catch (err) {
         console.error("Toggle publish error:", err);
@@ -179,10 +193,40 @@ export default {
     },
 
     handleModal(poll, option) {
+      if (!this.isAdmin()) {
+        return; // Only allow modal for admins
+      }
+
       this.modalTitle = option.option_name;
       this.modalVoters = option.voters || [];
       this.isModalVisible = true;
     }
-  }
+  },
+  setup() {
+    const {
+      theme3, 
+      theme61,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9, themeInputText,
+      themeText,
+    } = useTheme();
+
+    const toast = useToast();
+
+    return {
+  
+      theme3, themeInputText,
+      theme5,
+      theme6,
+      theme7,
+      theme8, theme61,
+      theme9,
+      themeText,
+      toast,
+    };
+  },
 };
 </script>

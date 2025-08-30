@@ -29,13 +29,39 @@
 <script>
 import apiEndpoints from '@/config/apiConfig';
 import axios from 'axios';
-
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
-
 export default {
+
     setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
   },
   data() {
     return {
@@ -50,12 +76,18 @@ export default {
       this.error = '';
       try {
         const res = await axios.post(apiEndpoints.login, this.form);
+        // sessionStorage.setItem('token', res.data.data.token);
+        sessionStorage.setItem('token', res.data.data.token);
         localStorage.setItem('token', res.data.data.token);
-        localStorage.setItem('user_id', res.data.data.user.id);
-        localStorage.setItem('login_user_name', res.data.data.user.name);
-        localStorage.setItem('email', this.form.email);
+        sessionStorage.setItem('user_id', res.data.data.user.id);
+        sessionStorage.setItem('login_user_name', res.data.data.user.name);
+        sessionStorage.setItem('role_id', res.data.data.role_id);
+
+        sessionStorage.setItem('meeting_create_per', res.data.data.user.meeting_create_per);
+        sessionStorage.setItem('polling_create_per', res.data.data.user.polling_create_per);
+        sessionStorage.setItem('email', this.form.email);
         console.log(res);
-        console.log(localStorage.getItem('user_id'));
+        console.log(sessionStorage.getItem('user_id'));
         this.$router.push('/dashboard');
       } catch (error) {
         this.error = 'Invalid credentials!';

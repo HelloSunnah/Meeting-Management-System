@@ -23,12 +23,40 @@
   
   <script>import apiEndpoints from '@/config/apiConfig';
 
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 
 export default {
+
     setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
   },    props: {
       showCancelModal: Boolean,
       cancelReason: String,  // Binding reason prop to the modal

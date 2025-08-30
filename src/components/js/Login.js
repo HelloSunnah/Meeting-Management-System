@@ -1,5 +1,6 @@
 
 import { globals } from "@/config/globals";
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 import axios from "axios";
 
@@ -31,7 +32,7 @@ export default {
           password: this.password
         });
   
-        localStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('token', response.data.token);
   
         this.$router.push('/dashboard'); 
       } catch (error) {

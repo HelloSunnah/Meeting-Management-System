@@ -64,9 +64,6 @@
             <div class="flex flex-col flex-1 justify-between items-center text-center p-6">
               <div
                 class="w-full bg-green-700 text-white py-4 px-4 rounded-t-2xl flex justify-between items-start w-full">
-                <!-- <p v-if="room.upcomingMeeting" class="text-sm font-medium">
-                  📅 Upcoming meeting scheduled today
-                </p> -->
                 <span class="location-badge">{{ room.location_name }}</span>
               </div>
               <div class="flex flex-col items-center justify-center flex-1">
@@ -82,11 +79,13 @@
     </template>
   </div>
 </template>
+
 <script>
 import Marquee from "@/components/Overview/Marque.vue";
 import axios from "axios";
 import apiEndpoints from "@/config/apiConfig";
 import FloatingLogin from "@/components/Main/Floating/FloatingLogin.vue";
+
 export default {
   components: {
     FloatingLogin,
@@ -96,32 +95,35 @@ export default {
     return {
       loading: true,
       rooms: [],
-      userAvatar: "https://randomuser.me/api/portraits/men/1.jpg",
+      userAvatar: "",
     };
   },
   computed: {
     processedRooms() {
       const now = new Date();
-      return this.rooms.map((room) => {
-        const meetingsWithTimes = room.meetings.map((m) => {
-          const start = new Date(`${m.date}T${m.start_time}`);
-          const end = new Date(`${m.date}T${m.end_time}`);
-          return { ...m, start, end };
+      return this.rooms
+        .map((room) => {
+          const meetingsWithTimes = room.meetings.map((m) => {
+            const start = new Date(`${m.date}T${m.start_time}`);
+            const end = new Date(`${m.date}T${m.end_time}`);
+            return { ...m, start, end };
+          });
+          const current = meetingsWithTimes.find((m) => now >= m.start && now <= m.end);
+          const upcoming = meetingsWithTimes.filter((m) => m.start > now).sort((a, b) => a.start - b.start);
+          return {
+            location_id: room.location_id,
+            location_name: room.location_name,
+            location_serial: room.location_serial, // Added location_serial here
+            meeting: current || null,
+            upcomingMeeting: upcoming[0] || null,
+            allUpcoming: upcoming,
+          };
+        })
+        .sort((a, b) => {
+          if (a.meeting && !b.meeting) return -1;
+          if (!a.meeting && b.meeting) return 1;
+          return a.location_name.localeCompare(b.location_name);
         });
-        const current = meetingsWithTimes.find((m) => now >= m.start && now <= m.end);
-        const upcoming = meetingsWithTimes.filter((m) => m.start > now).sort((a, b) => a.start - b.start);
-        return {
-          location_id: room.location_id,
-          location_name: room.location_name,
-          meeting: current || null,
-          upcomingMeeting: upcoming[0] || null,
-          allUpcoming: upcoming,
-        };
-      }).sort((a, b) => {
-        if (a.meeting && !b.meeting) return -1;
-        if (!a.meeting && b.meeting) return 1;
-        return a.location_name.localeCompare(b.location_name);
-      });
     },
     runningMeeting() {
       const now = new Date();
@@ -130,7 +132,7 @@ export default {
           room.meetings.map((meeting) => {
             const start = new Date(`${meeting.date}T${meeting.start_time}`);
             const end = new Date(`${meeting.date}T${meeting.end_time}`);
-            return { ...meeting, location_name: room.location_name, start, end };
+            return { ...meeting, location_name: room.location_name, start, end, location_serial: room.location_serial };
           })
         )
         .find((meeting) => now >= meeting.start && now <= meeting.end);
@@ -141,7 +143,7 @@ export default {
         .flatMap((room) =>
           room.meetings.map((meeting) => {
             const start = new Date(`${meeting.date}T${meeting.start_time}`);
-            return { ...meeting, location_name: room.location_name, start };
+            return { ...meeting, location_name: room.location_name, start, location_serial: room.location_serial };
           })
         )
         .filter((meeting) => meeting.start > now)
@@ -155,14 +157,38 @@ export default {
     async fetchMeetings() {
       try {
         const { data } = await axios.get(apiEndpoints.location);
+
         this.rooms = data;
-        localStorage.setItem('cachedMeetings', JSON.stringify(data));
+
+        // Save cache by location_serial keys
+        data.forEach(room => {
+          if (room.location_serial) {
+            sessionStorage.setItem(
+              `cachedMeetings_${room.location_serial}`,
+              JSON.stringify(room)
+            );
+          }
+        });
+
       } catch (err) {
         console.error("Error loading meetings:", err);
-        const cached = localStorage.getItem('cachedMeetings');
-        if (cached) {
-          this.rooms = JSON.parse(cached);
-          console.warn("Loaded meetings from cache.");
+
+        // Attempt to load cached rooms by scanning all keys with 'cachedMeetings_'
+        const cachedRooms = [];
+
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('cachedMeetings_')) {
+            try {
+              const cachedRoom = JSON.parse(sessionStorage.getItem(key));
+              if (cachedRoom) cachedRooms.push(cachedRoom);
+            } catch { }
+          }
+        }
+
+        if (cachedRooms.length > 0) {
+          this.rooms = cachedRooms;
+          console.warn("Loaded meetings from cache by location_serial.");
         } else {
           console.warn("No cached meeting data available.");
         }
@@ -172,14 +198,21 @@ export default {
     },
     formatTime(timeStr) {
       const [h, m] = timeStr.split(":");
-      return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+      let hour = parseInt(h, 10);
+      const minute = m.padStart(2, "0");
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12;
+      if (hour === 0) hour = 12; // 12 AM or 12 PM
+      return `${hour}:${minute} ${ampm}`;
     },
+
+
     isImage(url) {
       return /\.(jpg|jpeg|png|gif|bmp)$/i.test(url);
     },
     getParticipantImage(p) {
       if (this.isImage(p.user_image)) {
-        return `${apiEndpoints.storage}/${p.user_image}`;
+        return `${apiEndpoints.storageUrl2}/${p.user_image}`;
       }
       return p.avatar || this.userAvatar;
     },
@@ -198,25 +231,24 @@ export default {
       }
     },
   },
-mounted() {
-  this.fetchMeetings();
+  mounted() {
+    this.fetchMeetings();
 
-  this.timer = setInterval(() => {
-    this.$forceUpdate(); 
-  }, 30000); 
+    this.timer = setInterval(() => {
+      this.$forceUpdate();
+    }, 30000);
 
-  this.reloadTimer = setInterval(() => {
-    this.fetchMeetings(); 
-  }, 5000); 
-},
-
-beforeDestroy() {
-  clearInterval(this.timer);
-  clearInterval(this.reloadTimer);
-},
-
+    this.reloadTimer = setInterval(() => {
+      this.fetchMeetings();
+    }, 5000);
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
+    clearInterval(this.reloadTimer);
+  },
 };
 </script>
+
 <style>
 .location-badge {
   background-color: #f0f9ff;
@@ -231,6 +263,7 @@ beforeDestroy() {
 
   transition: transform 0.3s ease-in-out;
 }
+
 .location-badge:hover {
   transform: scale(1.07);
 }

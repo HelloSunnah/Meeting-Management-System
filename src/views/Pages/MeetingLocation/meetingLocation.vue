@@ -1,6 +1,6 @@
 <template>
-  <div :class="theme8" class="min-h-screen p-2 sm:p-4 transition-all duration-300 ease-in-out">
-    <div :class="theme9" class="w-full rounded-lg shadow-xl p-3 sm:p-4">
+  <div :class="theme8" class="min-h-screen p-2  sm:p-4 transition-all duration-300 ease-in-out">
+    <div :class="theme9" class="w-full rounded-lg shadow-xl p-3 sm:p-4 mt-6">
       <Breadcrumb :items="breadcrumbs" :align="buttonPositionClass" :themeText="themeText" />
       <Loader v-if="loading" />
 
@@ -15,7 +15,7 @@
               <th class="p-2 w-20">Actions</th>
             </tr>
           </thead>
-          <tbody :class="theme7">
+          <tbody  v-if="paginatedLocations.length > 0":class="theme7">
             <template v-for="(location, index) in paginatedLocations" :key="location.id">
               <tr :class="getRowClass(index)">
                 <td class="p-2">
@@ -37,21 +37,33 @@
               </tr>
               <!-- Expanded location details for editing -->
               <tr v-show="expandedIndex === index" :class="theme9">
-                <td colspan="6" class="p-8 bg-gray-50 rounded-b-lg">
+                <td colspan="6" :class="theme6" class="p-8 bg-gray-50 rounded-b-lg">
                   <LocationEdit v-if="expandedIndex === index" :location-id="location.id" :location="location"
                     @updated="fetchLocations" />
                 </td>
               </tr>
             </template>
           </tbody>
+                   <tbody v-else>
+                <tr>
+                  <td :colspan="Object.keys(searchFields).length + 3" class="py-12 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor"
+                      stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 6v6h4m6 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    No Location found.
+                  </td>
+                </tr>
+              </tbody>
         </table>
       </div>
 
-      <FloatingAddButton :route="'/setup/meetingLocation/form'" />
       <Pagination :currentPage="currentPage" :totalPages="totalPages" @page-change="changePage" />
     </div>
   </div>   
    <DeleteConfirmationModal ref="deleteConfirmationModal" />
+      <FloatingAddButton :route="'/setup/meetingLocation/form'" />
 
 </template>
 <script>
@@ -63,7 +75,8 @@ import FloatingAddButton from "@/components/Main/Floating/FloatingAddButton.vue"
 import axios from "axios";
 import apiEndpoints from "@/config/apiConfig";
 import DeleteConfirmationModal from "@/components/Modals/ConfirmationModal.vue";
-
+import useTheme from '@/components/js/ThemeSetting';
+import { useToast } from "vue-toastification";
 export default {
   components: {
     LocationEdit,
@@ -71,6 +84,36 @@ export default {
     Loader,
     Breadcrumb,
     FloatingAddButton,
+  },
+      setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
+    const toast = useToast();
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
   },
   data() {
     return {
@@ -81,8 +124,7 @@ export default {
           clickable: true,
           onClick: () => this.$router.push("/dashboard"),
         },
-        { label: "Locations", clickable: false },
-        { label: "List", clickable: false },
+        { label: "Meeting Room", clickable: false },
       ],
       searchQueries: {
         name: "",
@@ -99,29 +141,7 @@ export default {
     buttonPositionClass() {
       return this.$store.state.sidebarPosition;
     },
-    theme5() {
-      return "bg-gray-500 text-gray-100";
-    },
-    theme6() {
-      return this.$store.state.theme === "dark"
-        ? "bg-gray-600 text-gray-50"
-        : "bg-gray-400 text-gray-900";
-    },
-    theme7() {
-      return this.$store.state.theme === "dark"
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-300 text-gray-700";
-    },
-    theme8() {
-      return this.$store.state.theme === "dark"
-        ? "bg-gray-800 text-gray-200"
-        : "bg-gray-200 text-gray-700";
-    },
-    theme9() {
-      return this.$store.state.theme === "dark"
-        ? "bg-gray-900 text-gray-100"
-        : "bg-gray-100 text-gray-900";
-    },
+ 
     searchFields() {
       return {
         name: "Search Name",
@@ -159,7 +179,7 @@ export default {
     },
     fetchLocations() {
       this.loading = true;
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       axios
         .get(apiEndpoints.meetingLocations, {
@@ -179,14 +199,13 @@ export default {
 
 deleteLocation(locationId){
   this.$refs.deleteConfirmationModal.show(
-        "Delete Project",
-        "Are you sure you want to delete this project?",
+        "Delete Room",
+        "Are you sure you want to delete this Room?",
         () => this.confirmDeleteLocation(locationId)
       );
 },
     confirmDeleteLocation(locationId) {
-      if (confirm("Are you sure you want to delete this location?")) {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         axios
           .delete(`${apiEndpoints.meetingLocations}/${locationId}`, {
@@ -194,18 +213,25 @@ deleteLocation(locationId){
           })
           .then(() => {
             this.fetchLocations();
+            this.toast.success("Meeting Room Deleted Successfully")
           })
           .catch((error) => {
             console.error("Error deleting location:", error);
           });
-      }
+      
     },
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) this.currentPage = page;
     },
+
     getRowClass(index) {
-      return index % 2 === 0 ? "bg-gray-50" : "bg-gray-100";
+      return index % 2 === 0 ? this.theme9 : this.theme8;
     },
   },
 };
 </script>
+<style scoped>
+.input-field {
+  @apply px-2 py-1 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-400;
+}
+</style>

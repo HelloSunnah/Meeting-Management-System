@@ -5,6 +5,8 @@ const store = createStore({
     return {
       theme: 'light',
       sidebarPosition: 'left',
+      token: localStorage.getItem('token') || null,
+      user: null,
     };
   },
   mutations: {
@@ -12,16 +14,39 @@ const store = createStore({
       state.theme = newTheme;
     },
     setSidebarPosition(state, position) {
-      state.sidebarPosition = position; 
+      state.sidebarPosition = position;
     },
+    setToken(state, token) {
+      state.token = token;
+      if (token) {
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('token');
+      }
+    },
+    setUser(state, user) {
+      state.user = user;
+    },
+    logout(state) {
+      state.token = null;
+      state.user = null;
+      localStorage.removeItem('token');
+    }
   },
   actions: {
     changeTheme({ commit }, newTheme) {
       commit('setTheme', newTheme);
     },
     changeSidebarPosition({ commit }, position) {
-      commit('setSidebarPosition', position); 
+      commit('setSidebarPosition', position);
     },
+    login({ commit }, { token, user }) {
+      commit('setToken', token);
+      commit('setUser', user);
+    },
+    logout({ commit }) {
+      commit('logout');
+    }
   },
   getters: {
     theme(state) {
@@ -29,6 +54,15 @@ const store = createStore({
     },
     sidebarPosition(state) {
       return state.sidebarPosition;
+    },
+    token(state) {
+      return state.token;
+    },
+    isAuthenticated(state) {
+      return !!state.token;
+    },
+    currentUser(state) {
+      return state.user;
     },
   },
 });

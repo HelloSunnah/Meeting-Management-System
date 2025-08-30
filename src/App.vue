@@ -1,24 +1,37 @@
 <template>
   <div :class="themeClass" class="flex flex-col min-h-screen overflow-auto scrollbar-hidden">
-    <!-- Sidebar -->
     <div class="flex flex-grow flex-col">
-      <Sidebar v-if="!isAuthPage" :isOpen="isSidebarOpen" :theme="theme" :position="sidebarPosition"
-        :class="sidebarPosition === 'left' ? 'sidebar-left' : 'sidebar-right'" />
+
+
+<Sidebar
+  v-if="!isAuthPage"
+  :isOpen="isSidebarOpen"
+  :theme="theme"
+  :position="sidebarPosition"
+  :class="[
+    sidebarPosition === 'left' ? 'sidebar-left' : 'sidebar-right',
+    'sidebar'
+  ]"
+/>
+
+
+
     </div>
-
     <div class="flex-1 flex flex-col relative">
-      <!-- Navbar -->
-      <Navbar v-if="!isAuthPage" @toggleSidebar="toggleSidebar" @toggle-sidebar-position="toggleSidebarPosition"
-        :class="navbarClasses" class="fixed top-0 left-0 right-0 z-10" />
-
-      <!-- Main Content -->
+<Navbar
+  v-if="!isAuthPage"
+  class="navbar fixed top-0 left-0 right-0 z-10"
+  @toggleSidebar="toggleSidebar"
+  @toggle-sidebar-position="toggleSidebarPosition"
+  :class="navbarClasses"
+/>
       <main :class="mainContentClasses" class="flex-1 overflow-y-auto pt-[60px] pb-[60px] no-scrollbar">
         <router-view />
       </main>
-
-      <!-- Footer -->
-      <Footer v-if="!isAuthPage" class="fixed bottom-0 left-0 right-0 z-10" />
-    </div>
+<Footer
+  v-if="!isAuthPage"
+  class="footer fixed bottom-0 left-0 right-0 z-10"
+/>    </div>
   </div>
 </template>
 <script>
@@ -41,14 +54,14 @@ export default {
   data() {
     return {
       isSidebarOpen: true,
-      sidebarPosition: this.getLocalStorage('sidebarPosition', 'left'),
+      sidebarPosition: this.getsessionStorage('sidebarPosition', 'left'),
     };
   },
   computed: {
     ...mapState(["theme"]), 
     isAuthPage() {
       return (
-        this.$route.name === "Login" || this.$route.name === "Registration" || this.$route.name === "Overview" ||this.$route.name === "subscriptionDesign" 
+        this.$route.name === "Login" || this.$route.name === "Registration" || this.$route.name === "Overview" ||this.$route.name === "subscriptionDesign"
       );
     },
     navbarClasses() {
@@ -76,23 +89,22 @@ export default {
     },
   },
   methods: {
-    getLocalStorage(key, defaultValue) {
-      return localStorage.getItem(key) || defaultValue;
+    getsessionStorage(key, defaultValue) {
+      return sessionStorage.getItem(key) || defaultValue;
     },
-    setLocalStorage(key, value) {
-      localStorage.setItem(key, value);
+    setsessionStorage(key, value) {
+      sessionStorage.setItem(key, value);
     },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
     },
     toggleSidebarPosition(position) {
       this.sidebarPosition = position;
-      this.setLocalStorage('sidebarPosition', this.sidebarPosition);
+      this.setsessionStorage('sidebarPosition', this.sidebarPosition);
     },
   },
 };
 </script>
-
 <script setup>
 import apiEndpoints from '@/config/apiConfig';
 import { onMounted, onUnmounted } from 'vue'
@@ -104,20 +116,55 @@ let activityTimeout
 
 function updateLastActivity() {
   const now = Date.now()
-  localStorage.setItem('lastActivity', now)
+  sessionStorage.setItem('lastActivity', now)
 }
+// function sendPingToServer() {
+//   const last = parseInt(sessionStorage.getItem('lastActivity') || Date.now());
+//   const isInactive = Date.now() - last > 5 * 60 * 1000;
+//   const token = sessionStorage.getItem("token");
+
+//   if (isInactive) {
+//     // Call logout API
+//     axios.post(apiEndpoints.logout, {}, {
+//       headers: { Authorization: `Bearer ${token}` },
+//     })
+//     .then(() => {
+//       sessionStorage.clear(); // Optionally clear session
+//       window.location.href = "/login"; // Redirect to login or home page
+//     })
+//     .catch(() => {
+//       console.warn("Logout failed.");
+//     });
+//     return; // Skip sending the activity ping if logging out
+//   }
+//   // Send user activity ping if active
+//   axios.post(apiEndpoints.userActivity, {}, {
+//     headers: { Authorization: `Bearer ${token}` },
+//   })
+//   .catch(() => {
+//     console.warn("Failed to update activity.");
+//   });
+// }
 
 function sendPingToServer() {
-  const last = parseInt(localStorage.getItem('lastActivity') || Date.now())
-  const isInactive = Date.now() - last > 5 * 60 * 1000
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
+
+  if (!token) return; // Skip if no token available
+
   axios.post(apiEndpoints.userActivity, {}, {
-  headers: { Authorization: `Bearer ${token}` },
-})
-    .catch(() => {
-      console.warn("Failed to update activity.")
-    })
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .catch(() => {
+    console.warn("Failed to update activity.");
+  });
+
+  // Optionally update lastActivity time
+  sessionStorage.setItem('lastActivity', Date.now());
 }
+
+// Start pinging every 30 seconds
+setInterval(sendPingToServer, 30 * 1000); // 30,000 ms = 30 seconds
+
 
 onMounted(() => {
   activityEvents.forEach(event =>
@@ -135,10 +182,7 @@ onUnmounted(() => {
   clearInterval(activityTimeout)
 })
 </script>
-
-
 <style scoped>
-
 .sidebar-left {
   position: fixed;
   top: 0;
@@ -148,7 +192,6 @@ onUnmounted(() => {
   z-index: 10;
   transition: left 0.3s ease;
 }
-
 .sidebar-right {
   position: fixed;
   top: 0;
@@ -158,7 +201,6 @@ onUnmounted(() => {
   z-index: 10;
   transition: right 0.3s ease;
 }
-
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -169,7 +211,6 @@ onUnmounted(() => {
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
-
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -178,12 +219,10 @@ onUnmounted(() => {
   margin-left: 250px;
   transition: margin-left 0.3s ease-in-out;
 }
-
 .navbar-right {
   margin-right: 250px;
   transition: margin-right 0.3s ease-in-out;
 }
-
 .navbar-no-sidebar {
   margin-left: 0;
   margin-right: 0;
@@ -197,42 +236,51 @@ onUnmounted(() => {
 body:not(.auth-page) .sidebar-left,
 body:not(.auth-page) .sidebar-right {
 }
-
 footer {
   height: 60px;
   background-color: #f1f1f1;
 }
-
 .auth-page .content {
   margin-left: 0;
   margin-right: 0;
 }
 @media screen and (max-width: 768px) {
-
   .sidebar-left,
   .sidebar-right {
     width: 70%;
   }
-
   .navbar-left,
   .navbar-right {
     margin-left: 0;
     margin-right: 0;
   }
-
   .content {
     margin-left: 0;
     margin-right: 0;
   }
 }
+@media print {
+  .navbar,
+  .footer,
+  .sidebar-left,
+  .sidebar-right {
+    display: none !important;
+  }
+
+  body {
+    margin: 0 !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}
 
 @media screen and (max-width: 480px) {
-
   .sidebar-left,
   .sidebar-right {
     width: 100%;
   }
-
   .content {
     margin-left: 0;
     margin-right: 0;

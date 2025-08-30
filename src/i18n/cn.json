@@ -202,6 +202,23 @@
   "Subscription": "订阅",
   "Meeting Room": "会议室",
   "Meeting": "会议",
+  "meeting": "会议",
   "Home": "主页",
-  "Room": "房间"
+  "Room": "房间",
+
+
+
+
+  "Polls": "投票",
+  "List": "列表",
+  "Next": "下一个",
+  "Prev": "上一个",
+  "User": "用户",
+  "Projects": "项目",
+  "Locations": "地点",
+  "Poll Options": "投票选项",
+  "China": "中国",
+  "Live Chat": "实时聊天",
+  "Report": "报告",
+  "Meeting Report": "会议报告"
 }

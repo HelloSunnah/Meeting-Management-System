@@ -1,6 +1,7 @@
 <template>
-  <div class="bg-gray-100 shadow-md rounded-xl border border-gray-200 p-6 space-y-6">
-    <h2 class="text-xl font-semibold text-gray-800">Participants</h2>
+  <div :class="theme7" class="bg-gray-100 shadow-md rounded-xl border border-gray-200 p-6 space-y-6">
+    <h2 :class="themeText" 
+    class="text-xl font-semibold text-gray-800">Participants</h2>
 
     <ul class="grid gap-4 max-h-[200px] overflow-y-auto"
         :class="participants.length === 1 ? 'grid-cols-1' : 'grid-cols-2'">
@@ -43,7 +44,8 @@
 <script>
 import Multiselect from "vue-multiselect";
 import apiEndpoints from "@/config/apiConfig";
-
+import useTheme from '@/components/js/ThemeSetting';
+import { useToast } from "vue-toastification";
 export default {
   components: { Multiselect },
  props: {
@@ -53,6 +55,36 @@ export default {
   isHostUser: Boolean,
 },
 emits: ['update:modelValue', 'removeParticipant'],
+  setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
+    const toast = useToast();
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
+  },
   data() {
     return {
       openAccordions: new Set(),
@@ -69,7 +101,7 @@ emits: ['update:modelValue', 'removeParticipant'],
     },
     getUserImageUrl(image, name) {
       return this.isImage(image)
-        ? `${apiEndpoints.storageUrl}/storage/${image}`
+        ? `${apiEndpoints.storageUrl2}/${image}`
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=128`;
     },
     isImage(path) {

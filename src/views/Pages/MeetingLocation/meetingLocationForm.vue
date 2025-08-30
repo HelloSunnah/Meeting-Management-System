@@ -1,38 +1,38 @@
 <template>
-  <div :class="themeClass" class="min-h-screen transition-all duration-300 ease-in-out py-10 px-4">
-    <div :class="formClass" class="max-w-full mx-auto bg-white rounded-2xl shadow-lg p-8 space-y-6">
-      <h2 :class="themeClass === 'bg-gray-900 text-white' ? 'text-white' : 'text-gray-800'"
+  <div :class="theme81" class="min-h-screen transition-all duration-300 ease-in-out py-10 px-4">
+    <div :class="theme61" class="max-w-full mx-auto  rounded-2xl shadow-lg p-8 space-y-6">
+      <h2 :class="themeText"
         class="text-3xl font-extrabold text-center transition-colors duration-300 ease-in-out">
-        Add New Location
+        Add New Meeting Room
       </h2>
       <form @submit.prevent="submitLocation" enctype="multipart/form-data" class="space-y-6">
 
         <!-- Card Grid Layout -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
           <!-- Left Column -->
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+          <div :class="theme7" class="p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
             <!-- Location Name -->
             <div>
-              <label class="form-label">Location Name <span class="text-red-500">*</span></label>
-              <input v-model="location.name" type="text" placeholder="Enter Location Name" class="input" required />
+              <label :class="themeText"  class="form-label">Meeting Room Name <span class="text-red-500">*</span></label>
+              <input :class="themeInputText"  v-model="location.name" type="text" placeholder="Enter Location Name" class="input" required />
             </div>
 
             <!-- Total Seat -->
             <div>
-              <label class="form-label">Total Seat <span class="text-red-500">*</span></label>
-              <input v-model="location.total_seat" type="number" placeholder="Total Seat" class="input" required />
+              <label :class="themeText"  class="form-label">Total Seat <span class="text-red-500">*</span></label>
+              <input :class="themeInputText"  v-model="location.total_seat"  v-non-negative type="number" placeholder="Total Seat" class="input" required />
             </div>
 
             <!-- Serial -->
             <div>
-              <label class="form-label">Serial <span class="text-red-500">*</span></label>
-              <input v-model="location.serial" type="number" placeholder="Serial" class="input" required />
+              <label :class="themeText"  class="form-label">Serial <span class="text-red-500">*</span></label>
+              <input :class="themeInputText"  v-model="location.serial" v-non-negative type="number" placeholder="Serial" class="input" required />
             </div>
 
             <!-- Select Company -->
             <div>
-              <label class="form-label">Select Company <span class="text-red-500">*</span></label>
-              <select v-model="location.company_id" class="input" required>
+              <label :class="themeText"  class="form-label">Select Company <span class="text-red-500">*</span></label>
+              <select  :class="themeInputText"  v-model="location.company_id" class="input" required>
                 <option v-for="company in companies" :key="company.id" :value="company.id">
                   {{ company.name }}
                 </option>
@@ -41,20 +41,17 @@
           </div>
 
           <!-- Right Column -->
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-            <!-- Status -->
+          <div :class="theme7" class=" p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
             <div>
-              <label class="form-label">Status</label>
-              <select v-model="location.status" class="input">
+              <label :class="themeText"  class="form-label">Status</label>
+              <select  :class="themeInputText"  v-model="location.status" class="input">
                 <option :value="1">Active</option>
                 <option :value="0">Inactive</option>
               </select>
             </div>
-
-            <!-- Description -->
             <div>
-              <label class="form-label">Description</label>
-              <textarea v-model="location.description" placeholder="Short description" class="input"></textarea>
+              <label :class="themeText"  class="form-label">Description</label>
+              <textarea  :class="themeInputText"  v-model="location.description" placeholder="Short description" class="input"></textarea>
             </div>
           </div>
         </div>
@@ -74,13 +71,33 @@
 <script>
 import apiEndpoints from '@/config/apiConfig';
 
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 
 export default {
+
     setup() {
+    const {
+      theme6,
+      theme8, theme61,
+      theme9,theme81,
+      themeText,
+      themeInputText,theme7
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
-  },  data() {
+
+    return {
+      theme61,
+      theme6,
+      theme8,
+      theme9,theme81,
+      themeText,
+      toast,themeInputText,theme7
+    };
+  },
+  
+  data() {
     return {
       location: {
         name: '',
@@ -100,7 +117,7 @@ export default {
   methods: {
     async fetchCompanies() {
       try {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         const res = await fetch(apiEndpoints.companies, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -110,34 +127,61 @@ export default {
         console.error('Error fetching companies:', error);
       }
     },
-    async submitLocation() {
-      this.isSubmitting = true;
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(apiEndpoints.meetingLocations, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.location),
+async submitLocation() {
+  this.isSubmitting = true;
+
+  try {
+    const token = sessionStorage.getItem('token');
+    const response = await fetch(apiEndpoints.meetingLocations, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(this.location),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Success: redirect or show toast
+      this.$router.push('/setup/meetingLocation');
+      // or this.toast.success('Meeting Location created successfully!');
+    } else {
+      // Handle server validation or other errors
+      this.errors = data;
+
+      // If your backend sends errors as an object or with 'errors' array, adjust here
+      if (Array.isArray(data.errors)) {
+        data.errors.forEach(err => {
+          if (err.detail) {
+            this.toast.error(err.detail);
+          } else {
+            this.toast.error(JSON.stringify(err));
+          }
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert('Meeting Location created successfully!');
-          this.$router.push('/setup/meetingLocation');
-        } else {
-          console.error('Error creating location:', data);
-          alert('Failed to create location.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        this.isSubmitting = false;
+      } else {
+        // Generic fallback: show all error messages
+        Object.values(data).forEach(messages => {
+          if (Array.isArray(messages)) {
+            messages.forEach(msg => this.toast.error(msg));
+          } else {
+            this.toast.error(messages);
+          }
+        });
       }
-    },
+
+      console.error('Error creating location:', data);
+    }
+  } catch (error) {
+    // Network or unexpected errors
+    this.toast.error('An unexpected error occurred. Please try again.');
+    console.error(error);
+  } finally {
+    this.isSubmitting = false;
+  }
+}
+
   },
 };
 </script>
@@ -148,6 +192,6 @@ export default {
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-sm font-medium mb-1;
 }
 </style>

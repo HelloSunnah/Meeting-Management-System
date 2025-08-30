@@ -14,17 +14,25 @@
       >
         <i class="fas fa-times"></i>
       </button>
-      <h2 class="text-xl font-semibold text-center text-indigo-600 mb-4">{{ title }}</h2>
+      <h2 class="text-xl font-semibold text-center text-indigo-600 mb-4">
+        {{ title }}
+      </h2>
       <div class="space-y-3">
-        <div v-if="voters.length === 0" class="text-center text-gray-500">No participants yet.</div>
+        <div v-if="voters.length === 0" class="text-center text-gray-500">
+          No participants yet.
+        </div>
         <ul v-else>
           <li
             v-for="voter in voters"
             :key="voter.user_id"
             class="flex justify-between items-center p-3 bg-gray-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200"
           >
-<strong class="text-gray-800">{{ voter.user_name || voter.name || 'Unnamed User' }}</strong>
-            <span v-if="voter.reason" class="text-sm text-gray-500">— {{ voter.reason }}</span>
+            <strong class="text-gray-800">{{
+              voter.user_name || voter.name || "Unnamed User"
+            }}</strong>
+            <span v-if="voter.reason" class="text-sm text-gray-500"
+              >— {{ voter.reason }}</span
+            >
           </li>
         </ul>
       </div>
@@ -50,7 +58,7 @@ export default {
   },
   methods: {
     closeModal() {
-      this.$emit('update:show', false);
+      this.$emit("update:show", false);
     },
   },
 };

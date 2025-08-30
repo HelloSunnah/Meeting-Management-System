@@ -1,20 +1,22 @@
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-md">
+  <div :class="theme81" class="p-6 rounded-lg shadow-md">
     <form @submit.prevent="updatePollOption">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <!-- Left Column -->
-        <div class="bg-gray-100 p-4 rounded">
+        <div class=" p-4 rounded">
           <!-- Title -->
           <div class="mb-4">
-            <label class="block font-semibold mb-1">Option Name</label>
-            <input v-model="formData.name" type="text" class="input-field" required />
+            <label :class="themeText" class="block font-semibold mb-1">Poll Option Name
+              <span class="text-red-500">*</span>
+            </label>
+            <input :class="themeInputText" v-model="formData.name" type="text" class="input-field" required />
           </div>
 
            <!-- Status -->
            <div class="mb-4">
-            <label class="block font-semibold mb-1">Status</label>
-            <select v-model="formData.status" class="input-field">
+            <label :class="themeText" class="block font-semibold mb-1">Status</label>
+            <select :class="themeInputText" v-model="formData.status" class="input-field">
               <option :value="1">Active</option>
               <option :value="0">Inactive</option>
             </select>
@@ -23,12 +25,12 @@
         </div>
 
         <!-- Right Column -->
-        <div class="bg-gray-100 p-4 rounded">
+        <div class="p-4 rounded">
          
           <!-- Description -->
           <div class="mb-4">
-            <label class="block font-semibold mb-1">Description</label>
-            <textarea v-model="formData.description" class="input-field" rows="3"></textarea>
+            <label :class="themeText" class="block font-semibold mb-1">Description</label>
+            <textarea :class="themeInputText" v-model="formData.description" class="input-field" rows="3"></textarea>
           </div>
         </div>
       </div>
@@ -36,7 +38,7 @@
       <!-- Submit -->
       <div class="mt-6 flex justify-center">
         <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow">
-          Save Changes
+          Update
         </button>
       </div>
     </form>
@@ -47,12 +49,30 @@
 import axios from 'axios';
 import apiEndpoints from '@/config/apiConfig';
 
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 
 export default {
-    setup() {
+
+       setup() {
+    const {
+      theme6,
+      theme8, theme61,
+      theme9,theme81,
+      themeText,
+      themeInputText,
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
+
+    return {
+      theme61,
+      theme6,
+      theme8,
+      theme9,theme81,
+      themeText,
+      toast,themeInputText
+    };
   },
   props: {
     pollOptionId: {
@@ -76,32 +96,48 @@ export default {
   mounted() {
   },
   methods: {
-   updatePollOption() {
-      const token = localStorage.getItem('token'); 
-      const formData = new FormData();
+updatePollOption() {
+  const token = sessionStorage.getItem('token'); 
+  const formData = new FormData();
 
-      for (const key in this.formData) {
-        if (this.formData[key] !== null && this.formData[key] !== undefined) {
-          formData.append(key, this.formData[key]);
-        }
-      }
-      formData.append('_method', 'PUT');
-      axios.post(apiEndpoints.updatePollOption(this.pollOptionId), formData, {
-        headers: {
-          Authorization: `Bearer ${token}`, 
-          'Content-Type': 'multipart/form-data',
-        }
-      })
-      .then(() => {
-        this.$emit('updated');
-        alert('Poll option updated successfully!');
-      })
-      .catch(error => {
-        console.error('Error updating poll option:', error);
-        alert('Failed to update poll option.');
-        this.toast.error()
-      });
+  // Append all formData fields
+  for (const key in this.formData) {
+    if (this.formData[key] !== null && this.formData[key] !== undefined) {
+      formData.append(key, this.formData[key]);
     }
+  }
+  formData.append('_method', 'PUT');
+
+  axios.post(apiEndpoints.updatePollOption(this.pollOptionId), formData, {
+    headers: {
+      Authorization: `Bearer ${token}`, 
+      'Content-Type': 'multipart/form-data',
+    }
+  })
+  .then(() => {
+    this.$emit('updated');
+    this.toast.success('Poll option updated successfully!');
+  })
+  .catch(error => {
+    console.error('Error updating poll option:', error);
+
+    // Check if API returned an error response
+    if (error.response && error.response.data && error.response.data.errors) {
+      const apiErrors = error.response.data.errors;
+      if (Array.isArray(apiErrors) && apiErrors.length) {
+        apiErrors.forEach(err => {
+          this.toast.error(err.detail || 'Unknown error occurred');
+        });
+      } else {
+        this.toast.error(error.response.data.message || 'Failed to update poll option.');
+      }
+    } else {
+      // Network or unexpected error
+      this.toast.error('Something went wrong. Please try again.');
+    }
+  });
+}
+
   }
 };
 </script>

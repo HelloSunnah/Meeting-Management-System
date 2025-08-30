@@ -194,7 +194,10 @@
 
 "Meeting Agenda": "ระเบียบวาระการประชุม",
 
-"meeting_schedule": "ตารางการประชุม",
+  "meeting_schedule": "ตารางการประชุม",
+  "Schedule": "ตารางเวลา",
+  "Live Chat": "แชทสด",
+  "Report": "รายงาน",
+  "Meeting Report": "รายงานการประชุม"
 
-"Schedule": "ตารางเวลา"
 }

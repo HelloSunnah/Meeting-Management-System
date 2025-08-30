@@ -196,6 +196,8 @@
   "Today's Total Meeting": "Today's Total Meeting",
   "Vote Result": "Vote Result",
 
+
+  
   "Agenda": "Agenda",
   "Meeting Agenda": "Meeting Agenda",
   "meeting_schedule": "meeting_agenda",
@@ -217,5 +219,12 @@
   "User": "User",
   "Projects": "Projects",
   "Locations": "Locations",
-  "Poll Options": "Poll Options"
+  "Poll Options": "Poll Options",
+
+
+
+
+  "Live Chat":"Live Chat"
+,"Report":"Report",
+"Meeting Report":"Meeting Report"
 }

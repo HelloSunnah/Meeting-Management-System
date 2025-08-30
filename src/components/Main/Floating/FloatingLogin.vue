@@ -3,7 +3,7 @@
     <button @click="toggleMenu" :style="getButtonStyle(mainButton, 'main')"
       class="custom-button button-scale relative mb-2" aria-label="Menu">
       <div class="flex items-center justify-center w-full h-full">
-        <img :src="mainButton.imgSrc" alt="Menu" class="w-6 h-6" v-show="!menuOpen" />
+        <img :src="mainButton.imgSrc" alt="Menu" class="w-8 h-6" v-show="!menuOpen" />
         <span v-show="menuOpen">{{ $t(mainButton.text) }}</span>
       </div>
     </button>
@@ -45,13 +45,13 @@ export default {
           iconClass: "fas fa-sign-in-alt",
         },
 
-        {
-          text: "Subscription",
-          action: () => this.$router.push("/subscription", "_blank"),
-          bgColor: "#9EBC8A",
-          textColor: "#ffffff",
-          iconClass: "fas fa-user-check",
-        },
+        // {
+        //   text: "Subscription",
+        //   action: () => this.$router.push("/subscription", "_blank"),
+        //   bgColor: "#9EBC8A",
+        //   textColor: "#ffffff",
+        //   iconClass: "fas fa-user-check",
+        // },
       ],
     };
   },

@@ -181,5 +181,21 @@
 
 "meeting_schedule": "会議のスケジュール",
 
-"Schedule": "スケジュール"
+ "Schedule": "スケジュール",
+  "Live Chat": "ライブチャット",
+  "Report": "レポート",
+  "Meeting Report": "会議レポート",  "Setup": "設定",
+  "Meeting Room": "会議室",
+  "Project": "プロジェクト",
+  "Poll Option": "投票オプション",
+  "Meeting Schedule": "会議予定",
+  "Polling": "投票",
+  "Vote": "投票",
+  "Home": "ホーム",
+  "Register": "登録",
+  "Vote Result": "投票結果",
+  "Client": "クライアント",
+  "User": "ユーザー",
+  "Poll Options": "投票オプション",
+  "List": "リスト"
 }

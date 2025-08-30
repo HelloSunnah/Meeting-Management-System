@@ -24,55 +24,64 @@
         <!-- Main Content Container -->
         <div class="flex flex-col flex-grow overflow-auto no-scrollbar bg-gray-100">
           <!-- User List / Conversation -->
-          <div v-if="!selectedUser" class="w-full space-y-2 p-4">
-            <div
-              class="bg-gray-200 text-center p-2 text-xl font-bold shadow-lg rounded-lg cursor-pointer flex items-center justify-between">
-              <span class="flex-1 text-center">Users</span>
-              <button @click="closeChat" class="text-gray items-end text-end hover:text-gray-900 text-xl"
-                aria-label="Close Chat">
-                <i class="fas fa-minus-circle"></i>
-              </button>
-            </div>
-            <!-- new code  -->
-            <div v-for="user in users" :key="user.id"
-              class="cursor-pointer p-3 flex items-center justify-between rounded-lg bg-white shadow-lg hover:bg-blue-100 transition-all duration-300 ease-in-out transform hover:scale-105 max-h-32"
-              @click="openChat(user)">
+            <div v-if="!selectedUser" class="w-full space-y-2 p-4">
+              <div class="bg-gray-200 text-center p-2 text-xl font-bold shadow-lg rounded-lg cursor-pointer flex items-center justify-between">
+                <span class="flex-1 text-center">Users</span>
+                <button @click="closeChat" class="text-gray items-end text-end hover:text-gray-900 text-xl" aria-label="Close Chat">
+                  <i class="fas fa-minus-circle"></i>
+                </button>
+              </div>
 
-              <!-- Avatar + Info -->
-              <div class="flex items-center">
-                <div class="relative">
-                  <img :src="getUserImageUrl(user.image, user.name)"
-                    class="w-10 h-10 rounded-full shadow-xl transform transition-transform duration-300 ease-in-out hover:scale-110" />
-                  <!-- Online Dot -->
-                  <span v-if="user.is_active"
-                    class="absolute bottom-0 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
-                </div>
-                <div class="flex flex-col">
-                  <div class="flex items-center space-x-2">
-                    <p :class="[
-                      'text-md',
-                      user.unread_count > 0 && isReceiver
-                        ? 'font-extrabold text-blue-900'
-                        : 'font-semibold text-gray-900'
-                    ]">
-                      {{ user.name }}
-                    </p>
-                    <span v-if="user.unread_count > 0 && isReceiver"
-                      class="bg-red-600 text-white text-[10px] font-bold rounded-full px-2 py-0.5">
-                      {{ user.unread_count }}
-                    </span>
+              <!-- 🔍 Search Field -->
+              <div class="relative mb-2">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search users..."
+                  class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
+                <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+              </div>
+
+              <!-- User Loop -->
+              <div v-for="user in filteredUsers" :key="user.id"
+                class="cursor-pointer p-3 flex items-center justify-between rounded-lg bg-white shadow-lg hover:bg-blue-100 transition-all duration-300 ease-in-out transform hover:scale-105 max-h-32"
+                @click="openChat(user)">
+
+                <!-- Avatar + Info -->
+                <div class="flex items-center">
+                  <div class="relative">
+                    <img :src="getUserImageUrl(user.image, user.name)"
+                      class="w-10 h-10 rounded-full shadow-xl transform transition-transform duration-300 ease-in-out hover:scale-110" />
+                    <!-- Online Dot -->
+                    <span v-if="user.is_active"
+                      class="absolute bottom-0 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                   </div>
+                  <div class="flex flex-col ml-2">
+                    <div class="flex items-center space-x-2">
+                      <p :class="[
+                          'text-md',
+                          user.unread_count > 0 && isReceiver
+                            ? 'font-extrabold text-blue-900'
+                            : 'font-semibold text-gray-900'
+                        ]">
+                        {{ user.name }}
+                      </p>
+                      <span v-if="user.unread_count > 0 && isReceiver"
+                        class="bg-red-600 text-white text-[10px] font-bold rounded-full px-2 py-0.5">
+                        {{ user.unread_count }}
+                      </span>
+                    </div>
 
-                  <p class="text-sm text-gray-600 truncate max-w-[200px]">
-                    {{ user.department_name || 'No bio available' }}
-                  </p>
+                    <p class="text-sm text-gray-600 truncate max-w-[200px]">
+                      {{ user.department_name || 'No bio available' }}
+                    </p>
+                  </div>
                 </div>
 
               </div>
-
             </div>
-            <!-- end -->
-          </div>
+
           <!-- Chat Window with Selected User -->
           <div v-if="selectedUser" class="flex bg-gray-50 overflow-hidden">
             <!-- User List (Sidebar) -->
@@ -275,52 +284,28 @@ input[type="text"]:focus {
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
 }
 </style>
-
 <script>
-import apiEndpoints from "@/config/apiConfig"; // Import apiEndpoints from your centralized config
+import apiEndpoints from "@/config/apiConfig";
 import axios from 'axios';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
-
-
-window.Pusher = Pusher;
-
-window.Echo = new Echo({
-  broadcaster: 'reverb',
-  key: 'tu2ote1tl8ypu81lft7p',
-  wsHost: "192.168.0.3",
-  wsPort: 4023,
-  wssPort: 4023,
-  forceTLS: false,
-  disableStats: true,
-  enabledTransports: ['ws', 'wss'],
-  authEndpoint: apiEndpoints.broadcasting,
-  auth: {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-      Accept: 'application/json',
-    },
-  },
-  debug: true,
-});
 
 export default {
   data() {
     return {
       isChatOpen: false,
       sendingMessage: false,
-      selectedUser: null,
+      selectedUser: {
+        messages: [],
+      },
       newMessage: "",
       userAvatar: "https://randomuser.me/api/portraits/men/1.jpg",
       users: [],
       senderId: null,
       attachment: null,
       attachmentType: null,
-      unreadMessages: {},
       currentChatChannel: null,
-      selectedUser: {
-        messages: [],
-      },
+      searchQuery: "",
     };
   },
   computed: {
@@ -339,129 +324,80 @@ export default {
     sidebarClass() {
       return this.$store.state.theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-blue-200 text-gray-800";
     },
-    isReceiver() {
-      return this.users
-        .filter(user => user.id !== this.senderId);
-    },
-
     totalUnreadCount() {
       return this.users
         .filter(user => user.id !== this.senderId)
         .reduce((sum, user) => sum + (user.unread_count || 0), 0);
-    }
+    },
+    filteredUsers() {
+      const query = this.searchQuery.toLowerCase();
+      return this.users.filter(user =>
+        user.name.toLowerCase().includes(query) ||
+        (user.department_name && user.department_name.toLowerCase().includes(query))
+      );
+    },
   },
-  async created() {
-    try {
-      const token = this.getToken();
-      const { data } = await axios.get(apiEndpoints.allUsers, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      this.senderId = data.logged_user.id; // Adjust if the response structure is different
-      this.fetchUsers();
-    } catch (error) {
-      this.handleError(error);
+  created() {
+    const token = this.$store.getters.token;
+    if (token && !this.$store.getters.echoInitialized) {
+      this.initializeEcho();
+      // this.$store.commit("setEchoInitialized", true);
     }
   },
   mounted() {
-    // Listen for clicks outside the chat window to close it
     document.addEventListener("click", this.handleClickOutside);
     this.scrollToBottom();
   },
-  beforeDestroy() {
-    // Remove the event listener when the component is destroyed
+  beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
   },
   methods: {
-    // Fetch authentication token from localStorage
-    getToken() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found!");
-      }
-      return token.trim();
-    },
+    initializeEcho() {
+      const token = this.$store.getters.token;
+      if (!token) return;
 
-    // Toggle chat window visibility
-    toggleChatWindow() {
-      this.isChatOpen = !this.isChatOpen;
+      window.Pusher = Pusher;
 
-      if (this.isChatOpen) {
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
-      }
-    },
-     toggleMenu(messageId) {
-    // Toggle the menu for this message
-    const message = this.selectedUser.messages.find(msg => msg.id === messageId);
-    if (message) {
-      message.showMenu = !message.showMenu;
-    }
-
-    // Close the menu for all other messages
-    this.selectedUser.messages.forEach(msg => {
-      if (msg.id !== messageId) {
-        msg.showMenu = false;
-      }
-    });
-  },
-    // Close chat window
-    closeChat() {
-      this.isChatOpen = false;
-      this.selectedUser = null;
-    },
-    async openChat(user) {
-      this.selectedUser = user;
-      await this.fetchConversation(user);
-
-      user.unread_count = 0;
-
-      try {
-        await axios.post(apiEndpoints.markAsRead, {
-          sender_id: user.id
-        }, {
-          headers: { Authorization: `Bearer ${this.getToken()}` }
-        });
-      } catch (error) {
-        console.error("Failed to mark messages as read:", error);
-      }
-
-      this.listenForNewMessages(user);
-      this.$nextTick(() => this.scrollToBottom());
-    },
-
-    // Scroll to the bottom of messages
-    scrollToBottom() {
-      this.$nextTick(() => {
-        const messagesContainer = this.$refs.messagesContainer;
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
+      window.Echo = new Echo({
+        broadcaster: "reverb",
+        key: "tu2ote1tl8ypu81lft7p",
+        wsHost: "192.168.0.3", // 🔧 Set your Reverb host
+        wsPort: 4023,   // 🔧 Set WebSocket port
+        wssPort: 4023,  // 🔧 Set secure port
+        forceTLS: false,
+        disableStats: true,
+        enabledTransports: ["ws", "wss"],
+        authEndpoint: apiEndpoints.broadcasting,
+        auth: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+        debug: true,
       });
+      this.initApp();
     },
 
-    // Check if attachment is an image
-    isImage(url) {
-      return url && /\.(jpg|jpeg|png|gif|bmp)$/i.test(url);
-    },
-    // Helper function to generate the full URL based on the attachment filename
-    generateApiUrl(attachment) {
-      return `${apiEndpoints.storageUrl}/${attachment}`;
-    },
+   async initApp() {
+  try {
+    const { data } = await axios.get(apiEndpoints.allUsers, {
+      headers: { Authorization: `Bearer ${this.$store.getters.token}` },
+    });
 
-    getUserImageUrl(image, name) {
-      return this.isImage(image)
-        ? `${apiEndpoints.storageUrl1}/${image}`
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=128`;
-    },
-    // Fetch users from the API
+    this.senderId = data.logged_user.id;
+    this.users = data.users;
+    this.listenToAllUsers();
+  } catch (error) {
+    this.handleError(error);
+  }
+}
+,
     async fetchUsers() {
       try {
-        const token = this.getToken();
         const { data } = await axios.get(apiEndpoints.allUsers, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${this.$store.getters.token}` },
         });
-        console.log("Fetched users:", data);
         this.users = data.users;
         this.listenToAllUsers();
       } catch (error) {
@@ -469,14 +405,11 @@ export default {
       }
     },
 
-    // Fetch conversation messages for a specific user
     async fetchConversation(user) {
       try {
-        const token = this.getToken();
         const { data } = await axios.get(apiEndpoints.messageConvo(user.id), {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${this.$store.getters.token}` },
         });
-        // console.log("Fetched conversation:", data);
         this.selectedUser.messages = data.messages;
         this.senderId = data.loggedInUserId;
         this.listenForNewMessages(user);
@@ -485,8 +418,6 @@ export default {
       }
     },
 
-
-    // Handle sending new messages
     async sendMessage() {
       if (!this.newMessage.trim() && !this.attachment) return;
       this.sendingMessage = true;
@@ -503,19 +434,15 @@ export default {
         }
 
         const response = await axios.post(apiEndpoints.messageSend, formData, {
-          headers: { Authorization: `Bearer ${this.getToken()}` },
+          headers: { Authorization: `Bearer ${this.$store.getters.token}` },
         });
 
-
         const message = response.data.message;
-        if (message.attachment) {
-          message.attachment.url = message.attachment.url;
-        }
 
-        // this.selectedUser.messages.push(message);
         this.newMessage = "";
         this.attachment = null;
         this.attachmentType = null;
+        this.selectedUser.messages.push(message);
         this.$nextTick(() => this.scrollToBottom());
       } catch (error) {
         this.handleError(error);
@@ -524,12 +451,26 @@ export default {
       }
     },
 
+    openChat(user) {
+      this.selectedUser = user;
+      this.fetchConversation(user);
+      user.unread_count = 0;
+
+      axios.post(
+        apiEndpoints.markAsRead,
+        { sender_id: user.id },
+        { headers: { Authorization: `Bearer ${this.$store.getters.token}` } }
+      );
+
+      this.listenForNewMessages(user);
+      this.$nextTick(() => this.scrollToBottom());
+    },
+
     listenForNewMessages(user) {
       const userIdA = Math.min(this.senderId, user.id);
       const userIdB = Math.max(this.senderId, user.id);
       const chatChannel = `chat-channel.${userIdA}.${userIdB}`;
 
-      // Leave previous channel
       if (this.currentChatChannel && this.currentChatChannel !== chatChannel) {
         window.Echo.leave(this.currentChatChannel);
       }
@@ -542,49 +483,45 @@ export default {
 
           const message = data.message;
 
-          // ✅ Chat currently open with this user
-          const isChatOpen = this.selectedUser &&
-            (this.selectedUser.id === message.sender_id || this.selectedUser.id === message.receiver_id);
-
-          this.selectedUser.messages.push(message);
-          this.$nextTick(() => this.scrollToBottom());
+          const isChatOpen =
+            this.selectedUser &&
+            (this.selectedUser.id === message.sender_id ||
+              this.selectedUser.id === message.receiver_id);
 
           if (isChatOpen) {
-            // this.selectedUser.messages.push(message);
+            this.selectedUser.messages.push(message);
             this.$nextTick(() => this.scrollToBottom());
-          } else {
-            // ✅ If message is NOT from sender (you), increment unread count
-            if (message.sender_id !== this.senderId) {
-              const targetUser = this.users.find(u => u.id === message.sender_id);
-              if (targetUser) {
-                targetUser.unread_count = (targetUser.unread_count || 0) + 1;
-              }
+          } else if (message.sender_id !== this.senderId) {
+            const targetUser = this.users.find((u) => u.id === message.sender_id);
+            if (targetUser) {
+              targetUser.unread_count = (targetUser.unread_count || 0) + 1;
             }
           }
         })
         .error(this.handleError);
     },
+
     listenToAllUsers() {
-      this.users.forEach(user => {
-        if (user.id === this.senderId) return; // Don't listen to self
+      this.users.forEach((user) => {
+        if (user.id === this.senderId) return;
 
         const userIdA = Math.min(this.senderId, user.id);
         const userIdB = Math.max(this.senderId, user.id);
         const chatChannel = `chat-channel.${userIdA}.${userIdB}`;
 
         window.Echo.private(chatChannel)
-          .listen('.MessageSent', (data) => {
+          .listen(".MessageSent", (data) => {
             if (!data?.message) return;
 
             const message = data.message;
 
             if (this.selectedUser && message.sender_id === this.selectedUser.id) {
-              // Active chat: show live
-              // this.selectedUser.messages.push(message);
+              this.selectedUser.messages.push(message);
               this.$nextTick(() => this.scrollToBottom());
             } else {
-              // Inactive chat: mark unread
-              const targetUser = this.users.find(u => u.id === message.sender_id);
+              const targetUser = this.users.find(
+                (u) => u.id === message.sender_id
+              );
               if (targetUser) {
                 targetUser.unread_count = (targetUser.unread_count || 0) + 1;
               }
@@ -593,20 +530,17 @@ export default {
           .error(this.handleError);
       });
     },
+
     async unsendMessage(messageId) {
       if (confirm("Are you sure you want to unsend this message?")) {
         try {
-          // Send DELETE request to backend to remove the message
           await axios.delete(`${apiEndpoints.messageDelete}/${messageId}`, {
-            headers: { Authorization: `Bearer ${this.getToken()}` }
+            headers: { Authorization: `Bearer ${this.$store.getters.token}` },
           });
 
-          this.selectedUser.messages = this.selectedUser.messages.filter(message => message.id !== messageId);
-          
-          const message = this.selectedUser.messages.find(msg => msg.id === messageId);
-          if (message) {
-            message.showMenu = false;
-          }
+          this.selectedUser.messages = this.selectedUser.messages.filter(
+            (msg) => msg.id !== messageId
+          );
           this.$nextTick(() => this.scrollToBottom());
         } catch (error) {
           console.error("Failed to unsend message:", error);
@@ -614,26 +548,57 @@ export default {
         }
       }
     },
-    // Handle file attachments
+
+    toggleChatWindow() {
+      this.isChatOpen = !this.isChatOpen;
+      if (this.isChatOpen) {
+        this.$nextTick(() => this.scrollToBottom());
+      }
+    },
+
+    closeChat() {
+      this.isChatOpen = false;
+      this.selectedUser = null;
+    },
+
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const messagesContainer = this.$refs.messagesContainer;
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
+    },
+    isImage(url) {
+      return url && /\.(jpg|jpeg|png|gif|bmp)$/i.test(url);
+    },
+
+    getUserImageUrl(image, name) {
+      return this.isImage(image)
+        ? `${apiEndpoints.storageUrl2}/${image}`
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=128`;
+    },
+
     handleAttachment(event) {
       const file = event.target.files[0];
       if (file) {
         this.attachment = file;
-        this.attachmentType = file.type.startsWith("image/") ? "image" : file.type === "application/pdf" ? "pdf" : "file";
+        this.attachmentType = file.type.startsWith("image/")
+          ? "image"
+          : file.type === "application/pdf"
+          ? "pdf"
+          : "file";
       }
     },
-    // Trigger file input dialog
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
 
-    // Error handling helper
     handleError(error) {
       console.error("Error occurred:", error);
-      alert("An error occurred. Please try again.");
+      // alert("An error occurred. Please try again.");
     },
 
-    // Handle clicks outside the chat window to close it
     handleClickOutside(event) {
       const chatWindow = this.$refs.chatWindow;
       const chatButton = this.$refs.chatButton;
@@ -648,10 +613,5 @@ export default {
       }
     },
   },
-  beforeDestroy() {
-    // Remove the event listener when the component is destroyed
-    document.removeEventListener("click", this.handleClickOutside);
-  },
-
 };
 </script>

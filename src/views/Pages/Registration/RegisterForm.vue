@@ -1,216 +1,272 @@
 <template>
-  <div :class="themeClass" class="min-h-screen transition-all duration-300 ease-in-out py-10 px-4">
-    <div :class="formClass" class="max-w-full mx-auto bg-white rounded-2xl shadow-lg p-8 space-y-6">
-      <h2 :class="themeClass === 'bg-gray-900 text-white' ? 'text-white' : 'text-gray-800'"
-        class="text-3xl font-extrabold text-center transition-colors duration-300 ease-in-out">
-        Create New User
-      </h2>
-      <form @submit.prevent="submitForm" enctype="multipart/form-data" class="">
+  <div :class="theme8" class="min-h-screen py-10 px-4">
+    <div :class="theme61" class="max-w-full mx-auto rounded-2xl shadow-lg p-8 space-y-6">
 
-        <!-- Card Grid Layout -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-            <div class="relative mb-4">
-              <label class="block text-sm font-semibold text-gray-700">Name <span class="text-red-500">*</span></label>
-              <input required v-model="form.name" type="text"
-                class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Full name" />
-              <span v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</span>
-            </div>
-            <div class="relative mb-4">
-              <label class="block text-sm font-semibold text-gray-700">Password <span
+      <h2 :class="themeText" class="text-3xl font-extrabold text-center">Create New User</h2>
+
+      <form @submit.prevent="submitForm" enctype="multipart/form-data">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+          <!-- Left Column -->
+          <div :class="theme7" class="p-6 rounded-2xl shadow-md space-y-4">
+            <h3 :class="themeText" class="text-lg font-semibold text-gray-700 mb-2 border-b pb-2">User Details</h3>
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Name <span
                   class="text-red-500">*</span></label>
-              <input v-model="form.password" type="password"
-                class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="••••••••" />
-              <span v-if="errors.password" class="text-red-500 text-sm">{{ errors.password }}</span>
+              <input :class="themeInputText" v-model="form.name" type="text" class="input" placeholder="Full name" />
+              <span v-if="errors.name" class="text-red-500 text-sm">{{ errors.name[0] }}</span>
             </div>
-            <div class="relative mb-4">
-              <label class="block text-sm font-semibold text-gray-700">Confirm Password <span
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Email
+                <span class="text-red-500">*</span>
+              </label>
+              <input :class="themeInputText" v-model="form.userName" class="input" type="email"
+                placeholder="test@gamil.com" />
+            </div>
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Password <span
                   class="text-red-500">*</span></label>
-              <input required v-model="form.password_confirmation" type="password"
-                class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              <input :class="themeInputText" v-model="form.password" type="password" class="input"
                 placeholder="••••••••" />
-              <span v-if="errors.password_confirmation" class="text-red-500 text-sm">{{ errors.password_confirmation }}</span>
+              <span v-if="errors.password" class="text-red-500 text-sm">{{ errors.password[0] }}</span>
+            </div>
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Confirm Password <span
+                  class="text-red-500">*</span></label>
+              <input :class="themeInputText" v-model="form.password_confirmation" type="password" class="input"
+                placeholder="••••••••" />
+              <span v-if="errors.password_confirmation" class="text-red-500 text-sm">{{ errors.password_confirmation
+                }}</span>
+              <span v-else-if="passwordMismatch" class="text-red-500 text-sm">Passwords do not match.</span>
+            </div>
+
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold mb-1">Allow Polling Creation</label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="form.polling_create_per" class="sr-only peer">
+                <div class="toggle-switch peer-checked:bg-gray-500"></div>
+                <span :class="themeText" class="ml-3 text-sm">{{ form.polling_create_per ? 'Yes' : 'No' }}</span>
+              </label>
+            </div>
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold mb-1">Allow Meeting Creation</label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="form.meeting_create_per" class="sr-only peer">
+                <div class="toggle-switch peer-checked:bg-gray-500"></div>
+                <span :class="themeText" class="ml-3 text-sm">{{ form.meeting_create_per ? 'Yes' : 'No' }}</span>
+              </label>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-            <div class="space-y-4">
-              <!-- Department Dropdown -->
-              <div class="relative mb-4">
-                <label class="block text-sm font-semibold text-gray-700">Email <span
-                    class="text-red-500">*</span></label>
-                <input required v-model="form.email" type="email"
-                  class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="example@domain.com" />
-                <span v-if="errors.email" class="text-red-500 text-sm">{{ errors.email }}</span>
-              </div>
+          <!-- Right Column -->
+          <div :class="theme7" class="p-6 rounded-2xl shadow-md space-y-4">
+            <h3 :class="themeText" class="text-lg font-semibold text-gray-700 mb-2 border-b pb-2">Profile Settings
+            </h3>
 
-              <div class="relative mb-4">
-                <label class="block text-sm font-semibold text-gray-700">Department</label>
-                <select v-model="form.department_id"
-                  class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option value="">Select a Department</option>
-                  <option  v-for="department in departments" :key="department.id" :value="department.id">
-                    {{ department.name }}
-                  </option>
-                </select>
-                <span v-if="errors.department_id" class="text-red-500 text-sm">{{ errors.department_id }}</span>
-              </div>
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">User Name <span
+                  class="text-red-500">*</span></label>
+              <input :class="themeInputText" v-model="form.email" type="email" class="input"
+                placeholder="example@domain.com" />
+              <span v-if="errors.email" class="text-red-500 text-sm">{{ errors.email[0] }}</span>
+            </div>
 
-              <!-- Image Upload -->
-              <div class="relative mb-4">
-                <label class="block text-sm font-semibold text-gray-700">Profile Image</label>
-                <input type="file"
-                  class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  @change="handleFileUpload($event, 'image')" />
-              </div>
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Department <span
+                  class="text-red-500">*</span></label>
+              <select :class="themeInputText" v-model="form.department_id" class="input">
+                <option value="">Select a Department</option>
+                <option v-for="department in departments" :key="department.id" :value="department.id">
+                  {{ department.name }}
+                </option>
+              </select>
+              <span v-if="errors.department_id" class="text-red-500 text-sm">{{ errors.department_id[0] }}</span>
+            </div>
 
-              <!-- Signature Upload -->
-              <div class="relative mb-4">
-                <label class="block text-sm font-semibold text-gray-700">Signature</label>
-                <input type="file"
-                  class="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  @change="handleFileUpload($event, 'signature')" />
-              </div>
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Profile Image</label>
+              <input type="file" class="file-input" @change="handleFileUpload($event, 'image')" />
+            </div>
+
+            <div>
+              <label :class="themeText" class="block text-sm font-semibold">Signature</label>
+              <input type="file" class="file-input" @change="handleFileUpload($event, 'signature')" />
             </div>
           </div>
         </div>
 
-        <div v-if="errors.general" class="text-red-500 text-center text-sm mb-4">{{ errors.general }}</div>
-
+        <!-- Submit Button -->
         <div class="w-full flex justify-center mt-6">
-          <button :disabled="loading" type="submit"
-            class="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out flex items-center justify-center">
-            <span v-if="loading" class="spinner-border spinner-border-sm mr-2"></span>
-            {{ loading ? 'Registering...' : 'Register' }}
+          <button type="submit"
+            class="bg-blue-500 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition duration-300 ease-in-out">
+            Register
           </button>
         </div>
       </form>
     </div>
   </div>
 </template>
+
 <script>
 import axios from 'axios';
 import apiEndpoints from '@/config/apiConfig';
-
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 
 export default {
-    setup() {
+  setup() {
+    const {
+      theme6, theme8, theme61, theme81,
+      theme9, theme7, themeText, themeInputText
+    } = useTheme();
     const toast = useToast();
-    return { toast };
-  },  data() {
     return {
-      themeClass: "",
-      formClass: "",
+      theme6, theme8, theme61, theme81,
+      theme9, theme7, themeText, themeInputText, toast
+    };
+  },
+  data() {
+    return {
       form: {
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
+        userName: '',
         company_id: '',
-        department_id: '', // To store selected department
+        department_id: '',
         designation_id: '',
         image: null,
         signature: null,
+        polling_create_per: 0,
+        meeting_create_per: 0,
       },
-      departments: [], // Will hold fetched department data
-      errors: {}, // For handling validation and API errors
-      loading: false,
+      departments: [],
+      errors: {},
     };
   },
+  computed: {
+    passwordMismatch() {
+      return (
+        this.form.password &&
+        this.form.password_confirmation &&
+        this.form.password !== this.form.password_confirmation
+      );
+    }
+  },
   mounted() {
-    this.fetchDepartments(); // Fetch departments on component mount
+    this.fetchDepartments();
   },
   methods: {
     async fetchDepartments() {
       try {
-        console.log("Fetching departments...");
         const response = await axios.get(apiEndpoints.departments, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
           },
         });
         this.departments = response.data.data;
-        console.log("Departments fetched:", this.departments);
       } catch (error) {
         console.error('Error fetching departments:', error);
       }
     },
 
     handleFileUpload(event, field) {
-      console.log(`Uploading file for ${field}:`, event.target.files[0]);
       this.form[field] = event.target.files[0];
     },
 
-    async submitForm() {
-      this.errors = {}; // Clear previous errors
-      console.log("Submitting form with data:", this.form);
-      this.form.company_id = 1;
+async submitForm() {
+  this.errors = {};
+  this.form.company_id = 1;
 
-      // Basic validation
-      if (
-        !this.form.name ||
-        !this.form.email ||
-        !this.form.password ||
-        !this.form.password_confirmation ||
-        !this.form.department_id ||
-        !this.form.company_id
-      ) {
-        this.errors.general = 'Please fill in all required fields.';
-        console.warn("Validation failed: Required fields missing");
-        return;
-      }
+  // Basic required field validation
+  const requiredFields = ['name', 'email', 'password', 'password_confirmation', 'department_id', 'company_id'];
+  const missingField = requiredFields.find(field => !this.form[field]);
 
-      if (this.form.password !== this.form.password_confirmation) {
-        this.errors.password = 'Passwords do not match.';
-        console.warn("Validation failed: Passwords do not match");
-        return;
-      }
+  if (missingField) {
+    this.errors.general = 'Please fill all required fields.';
+    this.toast.error(this.errors.general);
+    return;
+  }
 
-      if (this.loading) {
-        console.log("Submission already in progress...");
-        return;
-      }
+  // Check if password and confirmation match
+  if (this.form.password !== this.form.password_confirmation) {
+    this.errors.password_confirmation = 'Passwords do not match.';
+    this.toast.error(this.errors.password_confirmation);
+    return;
+  }
 
-      this.loading = true;
+  // Prepare form data for submission
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(this.form)) {
+    if (typeof value === 'boolean') {
+      formData.append(key, value ? 1 : 0);
+    } else if (value !== null && value !== '') {
+      formData.append(key, value);
+    }
+  }
 
-      const formData = new FormData();
-      for (const key in this.form) {
-        if (this.form[key] !== null && this.form[key] !== '') {
-          formData.append(key, this.form[key]);
-          console.log(`Appending to formData: ${key}`, this.form[key]);
+  try {
+    const response = await axios.post(apiEndpoints.register, formData, {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    this.toast.success('User registered successfully!');
+    this.$router.push("/Register");
+  } catch (error) {
+    if (error.response?.data) {
+      let errors = error.response.data;
+
+      // Try to parse string response if needed
+      if (typeof errors === 'string') {
+        try {
+          errors = JSON.parse(errors);
+        } catch (e) {
+          this.toast.error(errors);
+          this.errors.general = errors;
+          return;
         }
       }
 
-      try {
-        const res = await axios.post(apiEndpoints.register, formData, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+      this.errors = errors;
 
-        console.log("Registration successful:", res.data);
-        alert('Registration successful!');
-
-      
-        this.$router.push({ name: 'Register' }); // <-- Replace 'UserList' with your actual route name
-
-      } catch (error) {
-        if (error.response?.data?.errors) {
-          this.errors = error.response.data.errors;
-          console.error("API returned validation errors:", this.errors);
+      // Show each validation error
+      Object.values(errors).forEach(messages => {
+        if (Array.isArray(messages)) {
+          messages.forEach(msg => this.toast.error(msg));
         } else {
-          this.errors.general = 'Something went wrong. Please try again.';
-          console.error("API request failed:", error);
+          this.toast.error(messages);
         }
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+      });
+    } else {
+      this.toast.error('An unexpected error occurred.');
+    }
+  }
+}
+
+
+  }
 };
 </script>
+
+<style scoped>
+.input {
+  @apply w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:outline-none;
+}
+
+.file-input {
+  @apply w-full text-sm mt-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100;
+}
+
+.toggle-switch {
+  @apply w-11 h-6 bg-gray-300 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full;
+}
+</style>

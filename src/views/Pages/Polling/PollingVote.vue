@@ -1,80 +1,93 @@
 <!-- Main Component -->
 <template>
-  <div :class="theme8" class="min-h-screen p-6 sm:p-10 bg-gradient-to-br from-white to-gray-100">
-    <Breadcrumb :items="breadcrumbs" :align="buttonPositionClass" :themeText="themeText" />
-    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
-      <input type="month" v-model="selectedMonth"
+  <div :class="theme8" class="min-h-screen p-6 sm:p-10">
+    <Breadcrumb :class="themeText" :items="breadcrumbs" :align="buttonPositionClass" :themeText="themeText" />
+    <div :class="theme8" class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
+      <input :class="theme8" type="month" v-model="selectedMonth"
         class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300" />
-
-      <select v-model="pollVisibility"
+      <select :class="theme8" v-model="pollVisibility"
         class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300">
         <option value="active">Active</option>
         <option value="all">All</option>
       </select>
     </div>
-
     <div v-if="filteredPolls.length === 0" class="flex justify-center items-center">
-      <img src="@/assets/img/avail7.gif" alt="No Data Available" class="w-1/4 sm:w-1/6 mx-auto" />
+      <img src="@/assets/img/nodata.png" alt="No Data Available" class="w-1/4 sm:w-1/6 mx-auto" />
     </div>
-<!-- 
+    <!-- 
     <Loader v-if="loading" /> -->
-
-    <div v-if="filteredPolls.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-8">
-     <PollCard
-      v-for="poll in filteredPolls"
-      :key="poll.id"
-      :poll="poll"
-      :activePoll="activePoll"
-      :selectedOption="selectedOption"
-      :reason="reason"
-      :selectOption="selectOption"
-      :submitVote="submitVote"
-      :timeRemaining="timeRemaining"
-      :formatDate="formatDate"
-      :isPollEnded="isPollEnded"
-      :isAdminNotParticipant="isAdminNotParticipant"
-      :isReasonRequired="isReasonRequired"
-      :reasonPlaceholder="reasonPlaceholder"
-      :canSubmit="canSubmit"
-      :pollTypeLabel="pollTypeLabel"
-      :countdown="countdown"
-      :getCountdownBadgeClass="getCountdownBadgeClass"
-      :openParticipantsModal="openParticipantsModal"
-      :getModalPollTitle="getModalPollTitle"
-    />
+    <div v-if="filteredPolls.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-8 mt-4">
+      <PollCard v-for="poll in filteredPolls" :key="poll.id" :poll="poll" :activePoll="activePoll"
+        :selectedOption="selectedOption" :reason="reason" :selectOption="selectOption" :submitVote="submitVote"
+        :timeRemaining="timeRemaining" :formatDate="formatDate" :isPollEnded="isPollEnded"
+        :isAdminNotParticipant="isAdminNotParticipant" :isReasonRequired="isReasonRequired"
+        :reasonPlaceholder="reasonPlaceholder" :canSubmit="canSubmit" :pollTypeLabel="pollTypeLabel"
+        :countdown="countdown" :getCountdownBadgeClass="getCountdownBadgeClass"
+        :openParticipantsModal="openParticipantsModal" :getModalPollTitle="getModalPollTitle" />
     </div>
   </div>
-   <transition name="fade-scale">
-      <div v-if="showModalCongratulations"
-        class="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
-        <div class="bg-white border-2 border-green-500 shadow-2xl rounded-2xl px-10 py-8 max-w-md w-full text-center">
-          <button class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
-            @click="showModalCongratulations = false">&times;</button>
-          <div class="text-6xl mb-4 text-green-500">🎉</div>
-          <h2 class="text-4xl font-extrabold text-green-600 mb-2">Congratulations!</h2>
-          <p class="text-gray-600 text-base mb-4">Your vote was submitted successfully.</p>
-          <button @click="showModalCongratulations = false"
-            class="mt-4 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition">
-            Close
-          </button>
-        </div>
+  <transition name="fade-scale">
+    <div v-if="showModalCongratulations"
+      class="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
+      <div class="bg-white border-2 border-green-500 shadow-2xl rounded-2xl px-10 py-8 max-w-md w-full text-center">
+        <button class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
+          @click="showModalCongratulations = false">&times;</button>
+        <div class="text-6xl mb-4 text-green-500">🎉</div>
+        <h2 class="text-4xl font-extrabold text-green-600 mb-2">Congratulations!</h2>
+        <p class="text-gray-600 text-base mb-4">Your vote was submitted successfully.</p>
+        <button @click="showModalCongratulations = false"
+          class="mt-4 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition">
+          Close
+        </button>
       </div>
-    </transition>
+    </div>
+  </transition>
 </template>
 <script>
 import PollCard from "@/components/Pages/Polling/pollingCard.vue";
 import Breadcrumb from "@/components/Main/Breadcrumbs.vue";
 import Loader from "@/components/Main/Loader.vue";
 import apiEndpoints from "@/config/apiConfig";
+import useTheme from '@/components/js/ThemeSetting';
+import { useToast } from "vue-toastification";
 
 export default {
-  components: { Breadcrumb, Loader,PollCard },
+  setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+    const toast = useToast();
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
+  },
+  components: { Breadcrumb, Loader, PollCard },
   data() {
     return {
       showModalCongratulations: false,
       breadcrumbs: [
         { label: "Home", clickable: true, onClick: () => this.$router.push("/dashboard") },
-        { label: "Polling", clickable: false }
+        { label: "Polling", clickable: false },
+        { label: "Vote", clickable: false }
       ],
       polls: [],
       voted: {},
@@ -85,10 +98,9 @@ export default {
       reason: {},
       loading: false,
       buttonPositionClass: "",
-      theme8: "",
       activeModalPollId: null,
-      fetchError: false,      activeModalPollId: null, // To manage which poll's participants to show
-activeModalPollId:"",
+      fetchError: false, activeModalPollId: null, // To manage which poll's participants to show
+      activeModalPollId: "",
       themeText: "",
       countdownInterval: null,
     };
@@ -103,7 +115,7 @@ activeModalPollId:"",
   },
   computed: {
     userId() {
-      return localStorage.getItem("user_id");
+      return sessionStorage.getItem("user_id");
     },
     currentDate() {
       return new Date();
@@ -117,17 +129,33 @@ activeModalPollId:"",
     isPollVisible(poll, selectedDate) {
       const pollStart = new Date(poll.start_time);
       const pollEnd = new Date(poll.end_time);
-      const isAdmin = poll.admin_id.toString() === this.userId;
-      const isParticipant = poll.participants.some(p => p.id.toString() === this.userId);
       const isPollActive = pollStart <= this.currentDate && this.currentDate <= pollEnd;
-      if (selectedDate && (pollStart.getMonth() !== selectedDate.getMonth() || pollStart.getFullYear() !== selectedDate.getFullYear())) {
+      // Filter by selected month
+      if (
+        selectedDate &&
+        (pollStart.getMonth() !== selectedDate.getMonth() ||
+          pollStart.getFullYear() !== selectedDate.getFullYear())
+      ) {
         return false;
       }
+      // Filter out inactive polls if visibility is set to 'active'
       if (this.pollVisibility === "active" && !isPollActive) {
         return false;
       }
-      return isAdmin || (isParticipant && isPollActive);
-    },
+      const isAdmin = poll.admin_id.toString() === this.userId;
+      // Check if the user is a participant
+      const participant = poll.participants.find(p => p.id.toString() === this.userId);
+      // If user is not a participant and not the admin, hide the poll
+      if (!participant && !isAdmin) {
+        return false;
+      }
+      // Hide the poll if the user has already voted
+      if (participant && participant.voting_status === 1) {
+        return false;
+      }
+      return true;
+    }
+    ,
     openParticipantsModal(pollId) {
       this.activeModalPollId = pollId;
     },
@@ -135,7 +163,7 @@ activeModalPollId:"",
       this.activeModalPollId = null;
     },
     getToken() {
-      return localStorage.getItem("token");
+      return sessionStorage.getItem("token");
     },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -202,7 +230,7 @@ activeModalPollId:"",
       }
     },
     pollTypeLabel(type) {
-      return type === 1 ? "Meeting" : "General Poll";
+      return type === 1 ? "General" : "Meeting";
     },
     isPollEnded(poll) {
       return new Date(poll.end_time) < this.currentDate;
@@ -248,7 +276,7 @@ activeModalPollId:"",
     },
     getModalPollTitle() {
       return this.polls.find(p => p.id === this.activeModalPollId)?.title || "";
-    },   openParticipantsModal(pollId) {
+    }, openParticipantsModal(pollId) {
       this.activeModalPollId = pollId;
     },
     closeParticipantsModal() {

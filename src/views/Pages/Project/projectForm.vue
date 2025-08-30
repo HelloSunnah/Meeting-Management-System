@@ -1,8 +1,7 @@
 <template>
-  <div :class="themeClass" class="min-h-screen transition-all duration-300 ease-in-out py-10 px-4">
-    <div :class="formClass" class="max-w-full mx-auto bg-white rounded-2xl shadow-lg p-8 space-y-6">
-      <h2 :class="themeClass === 'bg-gray-900 text-white' ? 'text-white' : 'text-gray-800'"
-        class="text-3xl font-extrabold text-center transition-colors duration-300 ease-in-out">
+  <div :class="theme7" class="min-h-screen transition-all duration-300 ease-in-out py-10 px-4">
+    <div :class="theme81" class="max-w-full mx-auto rounded-2xl shadow-lg p-8 space-y-6">
+      <h2 :class="themeText" class="text-3xl font-extrabold text-center transition-colors duration-300 ease-in-out">
         Create New Project
       </h2>
       <form @submit.prevent="submitProject" enctype="multipart/form-data" class="space-y-6">
@@ -10,78 +9,92 @@
         <!-- Card Grid Layout -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
           <!-- Left Column -->
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-              <!-- Project Name -->
-              <div>
-                <label class="form-label">Project Name <span class="text-red-500">*</span></label>
-                <input v-model="project.name" type="text" placeholder="Enter Project Name" class="input" required />
-              </div>
+          <div :class="theme61"
+            class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
 
-              <!-- Owner Name -->
-              <div>
-                <label class="form-label">Owner Name <span class="text-red-500">*</span></label>
-                <input v-model="project.owner_name" type="text" placeholder="Owner Name" class="input" required />
-              </div>
-
-              <!-- Start Time -->
-              <div>
-                <label class="form-label">Start Date <span class="text-red-500">*</span></label>
-                <input v-model="project.start_time" type="date" class="input" required />
-              </div>
-
-              <!-- End Time -->
-              <div>
-                <label class="form-label">End Date <span class="text-red-500">*</span></label>
-                <input v-model="project.end_time" type="date" class="input" required />
-              </div>
-
-              <!-- Select Company -->
-              <div>
-                <label class="form-label">Select Company <span class="text-red-500">*</span></label>
-                <select v-model="project.company_id" class="input" required>
-                  <option v-for="company in companies" :key="company.id" :value="company.id">
-                    {{ company.name }}
-                  </option>
-                </select>
-              </div>
-          </div>
-
-          <!-- Right Column -->
-          <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-            <!-- Select Client -->
+            <!-- Project Name -->
             <div>
-              <label class="form-label">Select Client <span class="text-red-500">*</span></label>
-              <select v-model="project.client_id" class="input" required>
-                <option v-for="client in clients" :key="client.id" :value="client.id">
-                  {{ client.name }}
+              <label :class="themeText" class="form-label">Project Name <span class="text-red-500">*</span></label>
+              <input :class="themeInputText" v-model="project.name" type="text" placeholder="Enter Project Name"
+                class="input" required />
+            </div>
+
+            <!-- Owner Name -->
+            <div>
+              <label :class="themeText" class="form-label">Owner Name <span class="text-red-500">*</span></label>
+              <input :class="themeInputText" v-model="project.owner_name" type="text" placeholder="Owner Name"
+                class="input" required />
+            </div>
+
+            <!-- Start Time -->
+            <div>
+              <label :class="themeText" class="form-label">Start Date <span class="text-red-500">*</span></label>
+              <input :class="themeInputText" v-model="project.start_time" type="date" v-auto-date class="input"
+                required />
+            </div>
+
+            <!-- End Time -->
+            <div>
+              <label :class="themeText" class="form-label">End Date <span class="text-red-500">*</span></label>
+              <input :class="[themeInputText, !isEndDateValid() ? 'border-red-500' : '']" v-model="project.end_time"
+                type="date" v-auto-date class="input" required />
+              <p v-if="!isEndDateValid()" class="text-red-500 text-sm mt-1">
+                End Date cannot be earlier than the Start Date
+              </p>
+            </div>
+
+            <!-- Select Company -->
+            <div>
+              <label :class="themeText" class="form-label">
+                Select Company <span class="text-red-500">*</span>
+              </label>
+              <select :class="themeInputText" v-model="project.company_id" class="input" required>
+                <option value="" disabled selected hidden>-- Select a Company --</option>
+                <option v-for="company in companies" :key="company.id" :value="company.id">
+                  {{ company.name }}
                 </option>
               </select>
             </div>
 
+          </div>
+
+          <!-- Right Column -->
+          <div :class="theme61"
+            class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+
+            <!-- Select Client -->
+            <div>
+              <label :class="themeText" class="form-label">Select Client <span class="text-red-500">*</span></label>
+              <multiselect :class="themeInputText" v-model="project.client_id" :options="clients"
+                :reduce="client => client.id" label="name" track-by="id" placeholder="Select Client" :searchable="true"
+                :close-on-select="true" required />
+            </div>
+
             <!-- Description -->
             <div>
-              <label class="form-label">Description</label>
-              <textarea v-model="project.description" placeholder="Short description" class="input"></textarea>
+              <label :class="themeText" class="form-label">Description</label>
+              <textarea :class="themeInputText" v-model="project.description" placeholder="Short description"
+                class="input"></textarea>
             </div>
 
             <!-- Status -->
             <div>
-              <label class="form-label">Status</label>
-              <select v-model="project.status" class="input">
+              <label :class="themeText" class="form-label">Status</label>
+              <select :class="themeInputText" v-model="project.status" class="input">
                 <option :value="1">Active</option>
                 <option :value="0">Inactive</option>
               </select>
             </div>
-
           </div>
         </div>
-            <!-- Submit Button -->
-            <div class="flex justify-center mt-6">
-              <button type="submit" :disabled="isSubmitting"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300">
-                {{ isSubmitting ? 'Saving...' : 'Save' }}
-              </button>
-            </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center mt-6">
+          <button type="submit" :disabled="!isFormValid || isSubmitting"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSubmitting ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -89,14 +102,36 @@
 
 <script>
 import apiEndpoints from '@/config/apiConfig';
-
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
+import Multiselect from "vue-multiselect";
 
 export default {
-    setup() {
+  components: {
+    Multiselect,
+  },
+  setup() {
+    const {
+      theme6,
+      theme8, theme61,
+      theme9, theme81,
+      themeText, theme7,
+      themeInputText,
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
-  },  data() {
+
+    return {
+      theme61, theme7,
+      theme6,
+      theme8,
+      theme9, theme81,
+      themeText,
+      toast, themeInputText
+    };
+  },
+
+  data() {
     return {
       project: {
         name: '',
@@ -111,16 +146,33 @@ export default {
       isSubmitting: false,
       companies: [],
       clients: [],
+      errors: {}
     };
   },
+
   mounted() {
     this.fetchCompanies();
     this.fetchClients();
   },
+
+  computed: {
+    isFormValid() {
+      return (
+        this.project.name.trim() !== "" &&
+        this.project.owner_name.trim() !== "" &&
+        this.project.start_time !== "" &&
+        this.project.end_time !== "" &&
+        this.isEndDateValid() &&
+        this.project.company_id !== null &&
+        this.project.client_id !== null
+      );
+    }
+  },
+
   methods: {
     async fetchCompanies() {
       try {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         const res = await fetch(apiEndpoints.companies, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -130,22 +182,46 @@ export default {
         console.error('Error fetching companies:', error);
       }
     },
+
     async fetchClients() {
       try {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         const res = await fetch(apiEndpoints.clients, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        this.clients = data.data;
+
+        this.clients = data.data.filter(client => client.status === 1);
       } catch (error) {
         console.error('Error fetching clients:', error);
       }
     },
+
+    isEndDateValid() {
+      if (!this.project.start_time || !this.project.end_time) return true;
+      return new Date(this.project.end_time) > new Date(this.project.start_time);
+    },
+
     async submitProject() {
+      this.errors = {};
+      if (!this.isEndDateValid()) {
+        this.toast.error("End Date cannot be earlier or same to Start Date");
+        return;
+      }
+
       this.isSubmitting = true;
+
       try {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
+
+        // Ensure only IDs sent
+        if (typeof this.project.client_id === 'object') {
+          this.project.client_id = this.project.client_id.id;
+        }
+        if (typeof this.project.company_id === 'object') {
+          this.project.company_id = this.project.company_id.id;
+        }
+
         const response = await fetch(apiEndpoints.projects, {
           method: 'POST',
           headers: {
@@ -155,22 +231,50 @@ export default {
           body: JSON.stringify(this.project),
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
 
-        if (response.ok) {
-          alert('Project created successfully!');
-          this.$router.push('/setup/project');
-        } else {
-          console.error('Error creating project:', data);
-          alert('Failed to create project.');
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+          } catch {
+            this.toast.error(responseText);
+            this.errors.general = responseText;
+            this.isSubmitting = false;
+            return;
+          }
+
+          this.errors = errorData;
+
+          if (Array.isArray(errorData.errors)) {
+            errorData.errors.forEach(err => {
+              this.toast.error(err.detail || JSON.stringify(err));
+            });
+          } else {
+            Object.values(errorData).forEach(messages => {
+              if (Array.isArray(messages)) {
+                messages.forEach(msg => this.toast.error(msg));
+              } else {
+                this.toast.error(messages);
+              }
+            });
+          }
+
+          this.isSubmitting = false;
+          return;
         }
+
+        this.toast.success("Project created successfully!");
+        this.$router.push("/setup/project");
+
       } catch (error) {
-        console.error('Error:', error);
+        this.toast.error("An unexpected error occurred. Please try again.");
+        console.error(error);
       } finally {
         this.isSubmitting = false;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -180,6 +284,6 @@ export default {
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-sm font-medium mb-1;
 }
 </style>

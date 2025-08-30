@@ -1,9 +1,9 @@
 <template>
   <div :class="theme8" class="p-4  min-h-screen">
 
-    <FloatingChat />
+    <!-- <FloatingChat /> -->
     <Card2 :stats="statsData" />
-    <Card3Data :card3Data="card3Data" />
+    <!-- <Card3Data :card3Data="card3Data" />
     <FloatingButtons />
 
     <div
@@ -17,8 +17,8 @@
       </div>
     </div>
     <Chart />
-    <Chart1 />
-    <MyCalender />
+    <Chart1 /> -->
+    <!-- <MyCalender /> -->
   </div>
 </template>
 <script>
@@ -36,12 +36,40 @@ import themeSetting from "@/components/js/ThemeSetting.js"
 
 import apiEndpoints from '@/config/apiConfig';
 
+import useTheme from '@/components/js/ThemeSetting';
 import { useToast } from "vue-toastification";
 
 export default {
+
     setup() {
+    const {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+    } = useTheme();
+
     const toast = useToast();
-    return { toast };
+
+    return {
+      theme1,
+      theme2,
+      theme3,
+      theme4,
+      theme5,
+      theme6,
+      theme7,
+      theme8,
+      theme9,
+      themeText,
+      toast,
+    };
   },  name: "themeSetting",
   ...themeSetting,
   components: {
@@ -86,7 +114,7 @@ export default {
   methods: {
     async fetchMeetingStats() {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await axios.get(apiEndpoints.meetingCounts, {
           headers: { Authorization: `Bearer ${token}` },
         });
